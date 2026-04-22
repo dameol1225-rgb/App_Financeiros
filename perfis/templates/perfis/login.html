@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Entrar | {{ app_name }}{% endblock %}
+{% block body_class %}login-page{% endblock %}
+
+{% block auth_content %}
+    <section class="auth-card" data-reveal>
+        <div class="hero-panel">
+            <p class="eyebrow">Bem-vindos</p>
+            <h1>Casal Organizado</h1>
+            <p class="muted">
+                Acompanhem entradas, parcelas, renda extra e o saldo projetado do casal em um unico app.
+            </p>
+            <div class="hero-pills">
+                <span class="tag">Django</span>
+                <span class="tag">Mobile first</span>
+                <span class="tag">Historico anual</span>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="section-heading">
+                <p class="eyebrow">Login compartilhado</p>
+                <h2>Entrar no aplicativo</h2>
+            </div>
+
+            <form method="post" class="stack-form">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="field-errors">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                    <label class="field">
+                        <span>{{ field.label }}</span>
+                        {{ field }}
+                        {% if field.errors %}
+                            <small class="field-errors">{{ field.errors|striptags }}</small>
+                        {% endif %}
+                    </label>
+                {% endfor %}
+
+                <button type="submit" class="primary-button">Entrar</button>
+            </form>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,125 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Imprimir | {{ app_name }}{% endblock %}
+{% block page_title %}Visualizacao de impressao{% endblock %}
+{% block eyebrow %}Resumo pronto para imprimir{% endblock %}
+{% block body_class %}print-preview-page{% endblock %}
+
+{% block topbar_actions %}
+    <button type="button" class="primary-button" data-print-trigger>Imprimir / Salvar PDF</button>
+    <a href="{% url 'dashboard' %}" class="ghost-button">Voltar</a>
+{% endblock %}
+
+{% block content %}
+    <section class="print-toolbar no-print" data-reveal>
+        <div>
+            <h3>Revise antes de imprimir</h3>
+            <p class="muted">A tela abaixo fica mais leve para leitura e abre pronta para imprimir ou salvar em PDF quando voce quiser.</p>
+        </div>
+        <button type="button" class="primary-button" data-print-trigger>Imprimir / Salvar PDF</button>
+    </section>
+
+    <article class="print-sheet" data-reveal>
+        <header class="print-sheet__header">
+            <div>
+                <p class="eyebrow">Relatorio financeiro</p>
+                <h3>{{ app_name }}</h3>
+                <p class="muted">Perfil {{ profile.nome }} - gerado em {{ generated_at|date:"d/m/Y" }}</p>
+            </div>
+            <div class="print-sheet__status">
+                <span class="status-chip {{ summary.month_status.tone }}">{{ summary.month_status.label }}</span>
+                <strong>Saldo previsto: R$ {{ summary.projected_balance|floatformat:2 }}</strong>
+            </div>
+        </header>
+
+        <section class="print-summary-grid">
+            <article>
+                <span>Entradas fixas</span>
+                <strong>R$ {{ summary.salary_total|floatformat:2 }}</strong>
+            </article>
+            <article>
+                <span>Renda extra</span>
+                <strong>R$ {{ summary.extra_total|floatformat:2 }}</strong>
+            </article>
+            <article>
+                <span>Saidas</span>
+                <strong>R$ {{ summary.expense_total|floatformat:2 }}</strong>
+            </article>
+            <article>
+                <span>Receita comprometida</span>
+                <strong>{{ summary.income_commitment_percentage|floatformat:2 }}%</strong>
+            </article>
+        </section>
+
+        <section class="print-section">
+            <div class="section-heading compact">
+                <div>
+                    <p class="eyebrow">Recebimentos</p>
+                    <h4>Entradas fixas</h4>
+                </div>
+            </div>
+            <div class="print-pill-grid">
+                {% for salario in salary_items %}
+                    <article class="print-mini-card">
+                        <span>Recebimento fixo</span>
+                        <strong>Dia {{ salario.dia_recebimento }}</strong>
+                        <p>R$ {{ salario.valor|floatformat:2 }}</p>
+                    </article>
+                {% empty %}
+                    <p class="muted">Nenhum recebimento fixo configurado.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="print-section">
+            <div class="section-heading compact">
+                <div>
+                    <p class="eyebrow">Rendas extras</p>
+                    <h4>Lancamentos adicionais</h4>
+                </div>
+            </div>
+            <div class="print-stack-list">
+                {% for renda in extra_income %}
+                    <article class="print-row-card">
+                        <div>
+                            <strong>{{ renda.descricao }}</strong>
+                            <p class="muted">{{ renda.data|date:"d/m/Y" }}</p>
+                        </div>
+                        <span>R$ {{ renda.valor|floatformat:2 }}</span>
+                    </article>
+                {% empty %}
+                    <p class="muted">Nenhuma renda extra cadastrada.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="print-section">
+            <div class="section-heading compact">
+                <div>
+                    <p class="eyebrow">Gastos</p>
+                    <h4>Resumo das dividas</h4>
+                </div>
+            </div>
+            <div class="print-expense-grid">
+                {% for item in gastos %}
+                    <article class="print-expense-card">
+                        <div class="print-expense-card__head">
+                            <div>
+                                <strong>{{ item.gasto.nome }}</strong>
+                                <p class="muted">{{ item.gasto.categoria.nome }}</p>
+                            </div>
+                            <span class="status-pill {% if item.gasto.status == 'quitado' %}done{% endif %}">{{ item.gasto.get_status_display }}</span>
+                        </div>
+                        <div class="print-expense-card__stats">
+                            <span>Total: R$ {{ item.gasto.valor_total|floatformat:2 }}</span>
+                            <span>Restantes: {{ item.remaining_count }}</span>
+                            <span>{% if item.next_due_date %}Proximo: {{ item.next_due_date|date:"d/m/Y" }}{% else %}Quitado{% endif %}</span>
+                        </div>
+                    </article>
+                {% empty %}
+                    <p class="muted">Nenhum gasto cadastrado para este perfil.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </article>
+{% endblock %}

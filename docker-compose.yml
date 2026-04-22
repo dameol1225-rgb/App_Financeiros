@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: financeiro
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    entrypoint: ["/code/docker-entrypoint.sh"]
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DB_ENGINE: postgresql
+      POSTGRES_DB: financeiro
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+
+  scheduler:
+    build: .
+    entrypoint: ["/code/docker-entrypoint.sh"]
+    command: ["sh", "-c", "while true; do python manage.py purge_financial_history; sleep 86400; done"]
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+    environment:
+      DB_ENGINE: postgresql
+      POSTGRES_DB: financeiro
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+
+volumes:
+  postgres_data:

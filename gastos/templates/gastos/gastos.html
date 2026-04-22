@@ -1,0 +1,93 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Gastos | {{ app_name }}{% endblock %}
+{% block page_title %}Gastos e dividas{% endblock %}
+{% block eyebrow %}Controle de {{ profile.nome }}{% endblock %}
+
+{% block topbar_actions %}
+    <a href="{% url 'export_pdf' %}" class="ghost-button">Imprimir / PDF</a>
+    <a href="{% url 'add_gasto' %}" class="primary-button">Novo gasto</a>
+{% endblock %}
+
+{% block content %}
+    <section class="page-intro intro-banner" data-reveal>
+        <div>
+            <h3>Corrija, remova e acompanhe os gastos com mais controle</h3>
+            <p class="muted">Qualquer edicao ou remocao aqui ja fica salva no banco e refletida nas parcelas do gasto.</p>
+        </div>
+        <a href="{% url 'add_gasto' %}" class="primary-button">Adicionar gasto</a>
+    </section>
+
+    <section class="expense-grid expense-grid--airy">
+        {% for item in gastos %}
+            <article class="expense-card clean expense-card--interactive" data-reveal>
+                <div class="expense-card__top">
+                    <div>
+                        <h3>{{ item.gasto.nome }}</h3>
+                        <p class="muted">{{ item.gasto.categoria.nome }} - vencimento dia {{ item.gasto.dia_vencimento }}</p>
+                    </div>
+                    <span class="status-pill {% if item.gasto.status == 'quitado' %}done{% endif %}">{{ item.gasto.get_status_display }}</span>
+                </div>
+
+                <div class="card-link-row">
+                    <a href="{% url 'edit_gasto' item.gasto.id %}" class="text-action">Editar</a>
+                    <form method="post" action="{% url 'delete_gasto' item.gasto.id %}" onsubmit="return confirm('Deseja remover este gasto?');">
+                        {% csrf_token %}
+                        <button type="submit" class="text-action text-action--danger">Excluir</button>
+                    </form>
+                </div>
+
+                <div class="expense-progress">
+                    <div class="progress-track slim">
+                        <div class="progress-fill" style="width: {{ item.progress_percentage|floatformat:0 }}%"></div>
+                    </div>
+                    <div class="expense-progress__meta">
+                        <span>{{ item.paid_count }} paga(s)</span>
+                        <span>{{ item.total_count }} parcela(s)</span>
+                    </div>
+                </div>
+
+                <div class="expense-card__stats">
+                    <div class="stat-pair">
+                        <span>Total</span>
+                        <strong>R$ {{ item.gasto.valor_total|floatformat:2 }}</strong>
+                    </div>
+                    <div class="stat-pair">
+                        <span>Parcela atual</span>
+                        <strong>R$ {{ item.monthly_value|floatformat:2 }}</strong>
+                    </div>
+                    <div class="stat-pair">
+                        <span>Restantes</span>
+                        <strong>{{ item.remaining_count }}</strong>
+                    </div>
+                </div>
+
+                <div class="tag-row compact-tags">
+                    <span class="tag">Em aberto: R$ {{ item.remaining_total|floatformat:2 }}</span>
+                    {% if item.next_due_date %}
+                        <span class="tag">Proximo: {{ item.next_due_date|date:"d/m/Y" }}</span>
+                    {% else %}
+                        <span class="tag tag-success">Tudo pago</span>
+                    {% endif %}
+                </div>
+
+                <div class="inline-actions two-actions">
+                    <form method="post" action="{% url 'mark_next_payment' item.gasto.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="primary-button small-button">Marcar proxima paga</button>
+                    </form>
+                    <form method="post" action="{% url 'undo_payment' item.gasto.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="ghost-button small-button">Desfazer ultimo pagamento</button>
+                    </form>
+                </div>
+            </article>
+        {% empty %}
+            <article class="section-card empty-state" data-reveal>
+                <h3>Nenhum gasto cadastrado</h3>
+                <p class="muted">Comece adicionando uma conta, compra parcelada ou despesa recorrente do perfil atual.</p>
+                <a href="{% url 'add_gasto' %}" class="primary-button">Cadastrar primeiro gasto</a>
+            </article>
+        {% endfor %}
+    </section>
+{% endblock %}

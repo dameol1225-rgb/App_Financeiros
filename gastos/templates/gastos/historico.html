@@ -1,0 +1,165 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Historico | {{ app_name }}{% endblock %}
+{% block page_title %}Historico mensal{% endblock %}
+{% block eyebrow %}Analise por periodo{% endblock %}
+
+{% block topbar_actions %}
+    <a href="{% url 'dashboard' %}" class="ghost-button">Dashboard</a>
+    <a href="{% url 'export_pdf' %}" class="primary-button">Imprimir / PDF</a>
+{% endblock %}
+
+{% block content %}
+    {{ chart|json_script:"history-chart-data" }}
+
+    <section class="section-card" data-reveal>
+        <form method="get" class="filter-grid">
+            <label class="field">
+                <span>Mes</span>
+                <select name="mes">
+                    {% for option in month_options %}
+                        <option value="{{ option }}" {% if selected_month == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label class="field">
+                <span>Ano</span>
+                <select name="ano">
+                    {% for option in year_options %}
+                        <option value="{{ option }}" {% if selected_year == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label class="field">
+                <span>Categoria</span>
+                <select name="categoria">
+                    <option value="">Todas</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.nome }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <label class="field">
+                <span>Status</span>
+                <select name="status">
+                    <option value="">Todos</option>
+                    {% for value, label in status_options %}
+                        <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+
+            <button type="submit" class="primary-button">Filtrar</button>
+        </form>
+    </section>
+
+    <section class="summary-grid compact">
+        <article class="metric-card tone-blue" data-reveal>
+            <p>Total do periodo</p>
+            <strong>R$ {{ period_total|floatformat:2 }}</strong>
+            <span>{{ reference_start|date:"F \\d\\e Y" }}</span>
+        </article>
+        <article class="metric-card tone-cyan" data-reveal>
+            <p>Categoria lider</p>
+            <strong>{% if top_category %}{{ top_category.label }}{% else %}Sem dados{% endif %}</strong>
+            <span>{% if top_category %}R$ {{ top_category.value|floatformat:2 }}{% else %}Nada registrado{% endif %}</span>
+        </article>
+        <article class="metric-card tone-green" data-reveal>
+            <p>Ticket medio</p>
+            <strong>R$ {{ average_ticket|floatformat:2 }}</strong>
+            <span>{{ entries|length }} gasto(s) no periodo</span>
+        </article>
+    </section>
+
+    <section class="feature-grid">
+        <article class="section-card chart-card" data-reveal>
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Categorias</p>
+                    <h3>Distribuicao do periodo</h3>
+                </div>
+                {% if top_category %}
+                    <span class="tag strong-tag">{{ top_category.share|floatformat:2 }}%</span>
+                {% endif %}
+            </div>
+
+            {% if top_category %}
+                <div class="chart-insight">
+                    <div>
+                        <p class="muted">Maior concentracao</p>
+                        <strong>{{ top_category.label }}</strong>
+                    </div>
+                    <div>
+                        <p class="muted">Valor acumulado</p>
+                        <strong>R$ {{ top_category.value|floatformat:2 }}</strong>
+                    </div>
+                </div>
+            {% endif %}
+
+            <canvas id="historyChart" height="260"></canvas>
+
+            <div class="breakdown-list">
+                {% for item in category_breakdown|slice:":5" %}
+                    <div class="breakdown-item">
+                        <div>
+                            <span class="color-dot" style="background: {{ item.color }}"></span>
+                            <strong>{{ item.label }}</strong>
+                        </div>
+                        <span>R$ {{ item.value|floatformat:2 }}</span>
+                    </div>
+                {% empty %}
+                    <p class="muted">Nenhum dado suficiente para montar o grafico neste periodo.</p>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="section-card" data-reveal>
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Lancamentos</p>
+                    <h3>Leitura resumida do mes</h3>
+                </div>
+                <span class="tag">{{ entries|length }} gasto(s)</span>
+            </div>
+
+            <div class="history-list">
+                {% for entry in entries %}
+                    <article class="history-row">
+                        <div class="history-row__head">
+                            <div>
+                                <h4>{{ entry.gasto.nome }}</h4>
+                                <p class="muted">{{ entry.gasto.categoria.nome }}</p>
+                            </div>
+                            <span class="status-pill {% if entry.gasto.status == 'quitado' %}done{% endif %}">{{ entry.gasto.get_status_display }}</span>
+                        </div>
+
+                        <div class="history-row__stats">
+                            <div class="stat-pair">
+                                <span>Total no periodo</span>
+                                <strong>R$ {{ entry.period_total|floatformat:2 }}</strong>
+                            </div>
+                            <div class="stat-pair">
+                                <span>Parcelas no mes</span>
+                                <strong>{{ entry.parcel_count }}</strong>
+                            </div>
+                            <div class="stat-pair">
+                                <span>Parcelas restantes</span>
+                                <strong>{{ entry.remaining_count }}</strong>
+                            </div>
+                        </div>
+
+                        {% if entry.next_pending %}
+                            <p class="muted">Proxima pendencia em {{ entry.next_pending|date:"d/m/Y" }}</p>
+                        {% endif %}
+                    </article>
+                {% empty %}
+                    <p class="muted">Nenhum gasto encontrado com os filtros informados.</p>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+{% endblock %}
+

@@ -1,0 +1,168 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="theme-{{ active_theme }} {% block body_class %}{% endblock %}">
+    {% if request.user.is_authenticated %}
+        <div class="app-shell">
+            <aside class="sidebar">
+                <div class="brand-card" data-reveal>
+                    <p class="eyebrow">Painel financeiro</p>
+                    <h1>{{ app_name }}</h1>
+                    <p class="muted">Receitas, dividas e fechamento do mes em uma leitura bem mais clara.</p>
+                </div>
+
+                {% if active_profile %}
+                    <div class="sidebar-profile" data-reveal>
+                        <span class="profile-badge">{{ active_profile.nome|slice:":1" }}</span>
+                        <div>
+                            <p class="muted">Perfil ativo</p>
+                            <strong>{{ active_profile.nome }}</strong>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <nav class="sidebar-nav" data-reveal>
+                    {% with current=request.resolver_match.url_name %}
+                        {% if active_profile %}
+                            <a href="{% url 'dashboard' %}" class="{% if current == 'dashboard' %}is-active{% endif %}">
+                                <i data-lucide="layout-dashboard"></i>
+                                <span>Dashboard</span>
+                            </a>
+                            <a href="{% url 'gastos' %}" class="{% if current == 'gastos' or current == 'add_gasto' or current == 'edit_gasto' %}is-active{% endif %}">
+                                <i data-lucide="receipt"></i>
+                                <span>Gastos</span>
+                            </a>
+                            <a href="{% url 'historico' %}" class="{% if current == 'historico' %}is-active{% endif %}">
+                                <i data-lucide="history"></i>
+                                <span>Historico</span>
+                            </a>
+                            <a href="{% url 'export_pdf' %}" class="{% if current == 'export_pdf' %}is-active{% endif %}">
+                                <i data-lucide="printer"></i>
+                                <span>Imprimir / PDF</span>
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'select_profile' %}" class="{% if current == 'select_profile' %}is-active{% endif %}">
+                            <i data-lucide="users"></i>
+                            <span>Perfis</span>
+                        </a>
+                        <a href="{% url 'logout' %}">
+                            <i data-lucide="log-out"></i>
+                            <span>Sair</span>
+                        </a>
+                    {% endwith %}
+                </nav>
+            </aside>
+
+            <div class="content-shell">
+                <header class="topbar">
+                    <div>
+                        <p class="eyebrow">{% block eyebrow %}Organizacao financeira{% endblock %}</p>
+                        <h2>{% block page_title %}{{ app_name }}{% endblock %}</h2>
+                    </div>
+                    <div class="topbar-controls">
+                        {% if active_profile %}
+                            <form method="post" action="{% url 'update_theme' %}" class="theme-switcher">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                {% for value, label in theme_options %}
+                                    <button
+                                        type="submit"
+                                        name="theme"
+                                        value="{{ value }}"
+                                        class="theme-option {% if active_theme == value %}is-active{% endif %}"
+                                    >
+                                        {{ label }}
+                                    </button>
+                                {% endfor %}
+                            </form>
+                        {% endif %}
+
+                        <div class="topbar-actions">
+                            {% block topbar_actions %}
+                                {% if active_profile %}
+                                    <a href="{% url 'export_pdf' %}" class="ghost-button">Imprimir / PDF</a>
+                                    <a href="{% url 'select_profile' %}" class="ghost-button">Trocar perfil</a>
+                                {% endif %}
+                                <a href="{% url 'logout' %}" class="ghost-button">Sair</a>
+                            {% endblock %}
+                        </div>
+                    </div>
+                </header>
+
+                <main class="page-content">
+                    {% if cleanup_notice %}
+                        <section class="alert-banner" data-reveal>
+                            <div>
+                                <p class="eyebrow">Aviso de limpeza anual</p>
+                                <strong>Seu historico sera limpo automaticamente em {{ cleanup_notice.cleanup_date|date:"d/m/Y" }}.</strong>
+                                <p class="muted">Use a visualizacao de impressao para guardar um resumo antes dessa data.</p>
+                            </div>
+                            <span class="alert-chip">{{ cleanup_notice.days_left }} dia(s)</span>
+                        </section>
+                    {% endif %}
+
+                    {% if messages %}
+                        <div class="message-stack">
+                            {% for message in messages %}
+                                <div class="message {{ message.tags }}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% block content %}{% endblock %}
+                </main>
+            </div>
+
+            {% if active_profile %}
+                <nav class="bottom-nav">
+                    {% with current=request.resolver_match.url_name %}
+                        <a href="{% url 'dashboard' %}" class="{% if current == 'dashboard' %}is-active{% endif %}">
+                            <i data-lucide="layout-dashboard"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="{% url 'gastos' %}" class="{% if current == 'gastos' or current == 'add_gasto' or current == 'edit_gasto' %}is-active{% endif %}">
+                            <i data-lucide="receipt"></i>
+                            <span>Gastos</span>
+                        </a>
+                        <a href="{% url 'historico' %}" class="{% if current == 'historico' %}is-active{% endif %}">
+                            <i data-lucide="history"></i>
+                            <span>Historico</span>
+                        </a>
+                        <a href="{% url 'export_pdf' %}" class="{% if current == 'export_pdf' %}is-active{% endif %}">
+                            <i data-lucide="printer"></i>
+                            <span>PDF</span>
+                        </a>
+                    {% endwith %}
+                </nav>
+            {% endif %}
+        </div>
+    {% else %}
+        <main class="auth-shell">
+            {% if messages %}
+                <div class="message-stack auth-messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block auth_content %}{% endblock %}
+        </main>
+    {% endif %}
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
+
