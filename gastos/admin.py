@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from gastos.models import Categoria, Gasto, Parcela
+from gastos.models import Categoria, Gasto, GastoDebito, Parcela
 
 
 class ParcelaInline(admin.TabularInline):
@@ -26,3 +26,10 @@ class GastoAdmin(admin.ModelAdmin):
 class ParcelaAdmin(admin.ModelAdmin):
     list_display = ("gasto", "numero", "valor", "data_vencimento", "status")
     list_filter = ("status", "data_vencimento")
+
+
+@admin.register(GastoDebito)
+class GastoDebitoAdmin(admin.ModelAdmin):
+    list_display = ("perfil", "descricao_exibicao", "valor", "data")
+    list_filter = ("perfil", "data")
+    search_fields = ("observacao",)

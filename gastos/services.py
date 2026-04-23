@@ -12,7 +12,7 @@ from financeiro.constants import (
     INSTALLMENT_FILTER_STATUS_CHOICES,
 )
 from financeiro.utils import add_months, month_bounds, next_due_date, quantize_money
-from gastos.models import Gasto, Parcela
+from gastos.models import Gasto, GastoDebito, Parcela
 
 
 ZERO = Decimal("0.00")
@@ -120,6 +120,16 @@ def delete_gasto_for_profile(gasto):
     gasto.delete()
 
 
+@transaction.atomic
+def create_debit_expense_for_profile(profile, cleaned_data):
+    return GastoDebito.objects.create(perfil=profile, **cleaned_data)
+
+
+@transaction.atomic
+def delete_debit_expense_for_profile(expense):
+    expense.delete()
+
+
 def mark_next_installment_paid(gasto):
     parcela = gasto.parcelas.filter(status=Parcela.Status.PENDENTE).order_by("numero").first()
     if parcela:
@@ -174,6 +184,7 @@ def serialize_gasto_card(gasto):
 
     current_parcela = pending[0] if pending else (parcelas[-1] if parcelas else None)
     remaining_total = sum((item.valor for item in pending), start=ZERO)
+    is_single_payment = total_count == 1
 
     return {
         "gasto": gasto,
@@ -185,6 +196,7 @@ def serialize_gasto_card(gasto):
         "next_due_date": current_parcela.data_vencimento if current_parcela else None,
         "remaining_total": remaining_total,
         "remaining_count": len(pending),
+        "is_single_payment": is_single_payment,
     }
 
 
@@ -211,6 +223,11 @@ def serialize_grouped_debt_cards(gastos):
                 "monthly_value": ZERO,
                 "next_due_date": None,
                 "items_count": 0,
+                "entries_count": 0,
+                "installment_purchase_count": 0,
+                "single_payment_count": 0,
+                "installment_entries": [],
+                "single_payment_entries": [],
             },
         )
 
@@ -220,6 +237,28 @@ def serialize_grouped_debt_cards(gastos):
         group["remaining_total"] += card["remaining_total"]
         group["monthly_value"] += card["monthly_value"]
         group["items_count"] += 1
+        group["entries_count"] += 1
+
+        entry = {
+            "gasto_id": gasto.id,
+            "categoria_nome": gasto.categoria.nome,
+            "data_inicio": gasto.data_inicio,
+            "paid_count": card["paid_count"],
+            "total_count": card["total_count"],
+            "remaining_count": card["remaining_count"],
+            "remaining_total": card["remaining_total"],
+            "current_due_value": card["monthly_value"],
+            "next_due_date": card["next_due_date"],
+            "valor_total": gasto.valor_total,
+            "is_single_payment": card["is_single_payment"],
+        }
+
+        if entry["is_single_payment"]:
+            group["single_payment_entries"].append(entry)
+            group["single_payment_count"] += 1
+        else:
+            group["installment_entries"].append(entry)
+            group["installment_purchase_count"] += 1
 
         next_due_date = card["next_due_date"]
         if next_due_date and (group["next_due_date"] is None or next_due_date < group["next_due_date"]):
@@ -233,6 +272,20 @@ def serialize_grouped_debt_cards(gastos):
                 (Decimal(group["paid_count"]) / Decimal(group["total_count"])) * Decimal("100")
             )
         group["progress_percentage"] = progress
+        group["installment_entries"].sort(
+            key=lambda item: (
+                item["next_due_date"] is None,
+                item["next_due_date"] or item["data_inicio"],
+                item["data_inicio"],
+            )
+        )
+        group["single_payment_entries"].sort(
+            key=lambda item: (
+                item["next_due_date"] is None,
+                item["next_due_date"] or item["data_inicio"],
+                item["data_inicio"],
+            )
+        )
         serialized_groups.append(group)
 
     serialized_groups.sort(
@@ -283,9 +336,15 @@ def build_annual_expense_chart(profile, filters, today):
         gasto__perfil=profile,
         data_vencimento__year=selected_year,
     ).order_by("data_vencimento", "numero")
+    annual_debit_expenses = GastoDebito.objects.filter(
+        perfil=profile,
+        data__year=selected_year,
+    ).order_by("data", "criado_em")
 
     for parcela in annual_parcels:
         monthly_totals[parcela.data_vencimento.month - 1] += parcela.valor
+    for expense in annual_debit_expenses:
+        monthly_totals[expense.data.month - 1] += expense.valor
 
     return {
         "selected_annual_year": selected_year,
@@ -371,13 +430,15 @@ def get_dashboard_data(profile, filters=None, today=None):
     salary_total = sum((item.valor for item in salary_items), start=ZERO)
     extra_income = list(profile.rendas_extras.filter(data__range=(month_start, month_end)))
     extra_total = sum((item.valor for item in extra_income), start=ZERO)
+    debit_expenses = list(profile.gastos_debito.filter(data__range=(month_start, month_end)))
+    debit_total = sum((item.valor for item in debit_expenses), start=ZERO)
 
     month_parcels = list(
         Parcela.objects.select_related("gasto", "gasto__categoria")
         .filter(gasto__perfil=profile, data_vencimento__range=(month_start, month_end))
         .order_by("data_vencimento", "numero")
     )
-    expense_total = sum((item.valor for item in month_parcels), start=ZERO)
+    expense_total = sum((item.valor for item in month_parcels), start=ZERO) + debit_total
     total_income = salary_total + extra_total
     projected_balance = total_income - expense_total
 
@@ -392,6 +453,8 @@ def get_dashboard_data(profile, filters=None, today=None):
     category_totals = defaultdict(lambda: ZERO)
     for parcela in month_parcels:
         category_totals[parcela.gasto.categoria.nome] += parcela.valor
+    if debit_total > ZERO:
+        category_totals["Debito"] += debit_total
     category_breakdown = build_category_breakdown(category_totals)
     top_category = category_breakdown[0] if category_breakdown else None
 
@@ -413,6 +476,8 @@ def get_dashboard_data(profile, filters=None, today=None):
         "salary_items": salary_items,
         "salary_total": salary_total,
         "extra_total": extra_total,
+        "debit_total": debit_total,
+        "debit_expenses": debit_expenses,
         "expense_total": expense_total,
         "total_income": total_income,
         "projected_balance": projected_balance,
@@ -487,18 +552,37 @@ def get_history_data(profile, year, month, category_id=None, status=None):
         )
         category_totals[gasto.categoria.nome] += period_total
 
+    debit_entries = []
+    include_debit_entries = not category_id and not status
+    if include_debit_entries:
+        debit_queryset = profile.gastos_debito.filter(data__range=(month_start, month_end)).order_by("-data", "-criado_em")
+        for expense in debit_queryset:
+            debit_entries.append(
+                {
+                    "expense": expense,
+                    "period_total": expense.valor,
+                }
+            )
+            category_totals["Debito"] += expense.valor
+
     entries.sort(key=lambda item: (-item["period_total"], item["gasto"].nome.lower()))
+    debit_entries.sort(key=lambda item: (-item["period_total"], item["expense"].descricao_exibicao.lower()))
 
     category_breakdown = build_category_breakdown(category_totals)
-    period_total = sum((item["period_total"] for item in entries), start=ZERO)
+    period_total = (
+        sum((item["period_total"] for item in entries), start=ZERO)
+        + sum((item["period_total"] for item in debit_entries), start=ZERO)
+    )
     average_ticket = ZERO
-    if entries:
-        average_ticket = quantize_money(period_total / Decimal(len(entries)))
+    total_entry_count = len(entries) + len(debit_entries)
+    if total_entry_count:
+        average_ticket = quantize_money(period_total / Decimal(total_entry_count))
 
     return {
         "reference_start": month_start,
         "reference_end": month_end,
         "entries": entries,
+        "debit_entries": debit_entries,
         "period_total": period_total,
         "average_ticket": average_ticket,
         "top_category": category_breakdown[0] if category_breakdown else None,
@@ -521,6 +605,7 @@ def get_print_preview_data(profile):
         "generated_at": today,
         "salary_items": profile.parcelas_salariais.order_by("dia_recebimento"),
         "extra_income": profile.rendas_extras.order_by("-data", "-criado_em"),
+        "debit_expenses": profile.gastos_debito.order_by("-data", "-criado_em"),
         "gastos": gastos,
         "summary": dashboard,
     }

@@ -61,8 +61,9 @@ def clear_profile_image(profile):
 def get_profile_history_anchor(profile):
     gasto_anchor = profile.gastos.order_by("data_inicio").values_list("data_inicio", flat=True).first()
     extra_anchor = profile.rendas_extras.order_by("data").values_list("data", flat=True).first()
+    debit_anchor = profile.gastos_debito.order_by("data").values_list("data", flat=True).first()
 
-    anchors = [item for item in (gasto_anchor, extra_anchor) if item]
+    anchors = [item for item in (gasto_anchor, extra_anchor, debit_anchor) if item]
     return min(anchors) if anchors else None
 
 

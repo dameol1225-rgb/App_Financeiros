@@ -121,5 +121,27 @@
                 {% endfor %}
             </div>
         </section>
+
+        <section class="print-section">
+            <div class="section-heading compact">
+                <div>
+                    <p class="eyebrow">Debito</p>
+                    <h4>Compras no debito</h4>
+                </div>
+            </div>
+            <div class="print-stack-list">
+                {% for expense in debit_expenses %}
+                    <article class="print-row-card">
+                        <div>
+                            <strong>Compra no debito</strong>
+                            <p class="muted">{{ expense.data|date:"d/m/Y" }}{% if expense.observacao %} - {{ expense.observacao }}{% endif %}</p>
+                        </div>
+                        <span>R$ {{ expense.valor|floatformat:2 }}</span>
+                    </article>
+                {% empty %}
+                    <p class="muted">Nenhuma compra no debito cadastrada.</p>
+                {% endfor %}
+            </div>
+        </section>
     </article>
 {% endblock %}

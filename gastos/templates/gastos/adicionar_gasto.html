@@ -24,23 +24,46 @@
             <form method="post" class="stack-form">
                 {% csrf_token %}
                 {% for field in form %}
-                    <label class="field">
-                        <span>{{ field.label }}</span>
-                        {{ field }}
-                        {% if field.name == "nome" %}
+                    {% if field.name == "nome" %}
+                        <div class="field">
+                            <span>{{ field.label }}</span>
+                            <select class="field-select-helper" data-expense-name-select data-target-field-id="{{ field.id_for_label }}" {% if not saved_expense_names %}disabled{% endif %}>
+                                <option value="">
+                                    {% if saved_expense_names %}
+                                        Escolher um cartão já salvo
+                                    {% else %}
+                                        Nenhum cartão salvo ainda
+                                    {% endif %}
+                                </option>
+                                {% for option in saved_expense_names %}
+                                    <option value="{{ option }}">{{ option }}</option>
+                                {% endfor %}
+                            </select>
+                            {{ field }}
                             <datalist id="expense-name-options">
                                 {% for option in saved_expense_names %}
                                     <option value="{{ option }}"></option>
                                 {% endfor %}
                             </datalist>
-                        {% endif %}
-                        {% if field.help_text %}
-                            <small class="muted">{{ field.help_text }}</small>
-                        {% endif %}
-                        {% if field.errors %}
-                            <small class="field-errors">{{ field.errors|striptags }}</small>
-                        {% endif %}
-                    </label>
+                            {% if field.help_text %}
+                                <small class="muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                <small class="field-errors">{{ field.errors|striptags }}</small>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <label class="field">
+                            <span>{{ field.label }}</span>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <small class="muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                <small class="field-errors">{{ field.errors|striptags }}</small>
+                            {% endif %}
+                        </label>
+                    {% endif %}
                 {% endfor %}
                 <button type="submit" class="primary-button">{% if is_edit_mode %}Salvar alteracoes{% else %}Salvar gasto{% endif %}</button>
             </form>
@@ -78,7 +101,7 @@
                     </div>
                     <div class="mini-list__item">
                         <strong>3.</strong>
-                        <p class="muted">Se você repetir um nome já usado, o dashboard soma esse compromisso no mesmo card de dívidas ativas.</p>
+                        <p class="muted">Se você repetir um nome já usado, o app mantém um card do cartão e separa as compras dentro dele.</p>
                     </div>
                 {% endif %}
             </div>

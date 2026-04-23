@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from gastos.models import Categoria, Gasto, Parcela
+from gastos.models import Categoria, Gasto, GastoDebito, Parcela
 from gastos.services import create_gasto_for_profile, mark_next_installment_paid
 from perfis.models import Perfil, RendaExtra
 from perfis.services import ensure_default_setup
@@ -68,6 +68,12 @@ class FinanceFlowTests(TestCase):
             valor=Decimal("200.00"),
             data=today,
         )
+        GastoDebito.objects.create(
+            perfil=self.samuel,
+            valor=Decimal("50.00"),
+            data=today,
+            observacao="Mercado no debito",
+        )
         create_gasto_for_profile(
             self.samuel,
             {
@@ -85,8 +91,29 @@ class FinanceFlowTests(TestCase):
 
         self.assertEqual(response.context["salary_total"], Decimal("1800.00"))
         self.assertEqual(response.context["extra_total"], Decimal("200.00"))
-        self.assertEqual(response.context["expense_total"], Decimal("60.00"))
-        self.assertEqual(response.context["projected_balance"], Decimal("1940.00"))
+        self.assertEqual(response.context["debit_total"], Decimal("50.00"))
+        self.assertEqual(response.context["expense_total"], Decimal("110.00"))
+        self.assertEqual(response.context["projected_balance"], Decimal("1890.00"))
+
+    def test_debit_expense_is_saved_without_due_bucket(self):
+        today = timezone.localdate()
+        self.login_and_select(self.samuel)
+
+        response = self.client.post(
+            reverse("add_debit_expense"),
+            {
+                "debit-valor": "45.90",
+                "debit-data": today.isoformat(),
+                "debit-observacao": "Padaria",
+            },
+        )
+
+        self.assertRedirects(response, reverse("gastos"))
+        self.assertTrue(GastoDebito.objects.filter(perfil=self.samuel, observacao="Padaria").exists())
+
+        dashboard_response = self.client.get(reverse("dashboard"))
+        self.assertEqual(dashboard_response.context["due_installments_count"], 0)
+        self.assertContains(self.client.get(reverse("gastos")), "Padaria")
 
     def test_dashboard_due_filters_work_by_month_category_and_status(self):
         today = timezone.localdate().replace(day=1)
@@ -282,6 +309,7 @@ class FinanceFlowTests(TestCase):
         response = self.client.get(reverse("add_gasto"))
 
         self.assertContains(response, 'list="expense-name-options"')
+        self.assertContains(response, 'data-expense-name-select')
         self.assertContains(response, '<option value="Carro">', html=True)
 
     def test_dashboard_groups_active_debts_by_name(self):
@@ -315,8 +343,46 @@ class FinanceFlowTests(TestCase):
         self.assertEqual(len(response.context["debt_cards"]), 1)
         debt_card = response.context["debt_cards"][0]
         self.assertEqual(debt_card["nome"], "Carro")
+        self.assertEqual(debt_card["entries_count"], 2)
+        self.assertEqual(debt_card["installment_purchase_count"], 2)
         self.assertEqual(debt_card["remaining_count"], 5)
         self.assertEqual(debt_card["remaining_total"], Decimal("300.00"))
+
+    def test_grouped_card_separates_single_payment_from_installments(self):
+        today = timezone.localdate().replace(day=1)
+        create_gasto_for_profile(
+            self.samuel,
+            {
+                "categoria": self.alimentacao,
+                "nome": "Cartão Mercado",
+                "valor_total": Decimal("80.00"),
+                "quantidade_parcelas": 1,
+                "dia_vencimento": 5,
+                "data_inicio": today,
+            },
+        )
+        create_gasto_for_profile(
+            self.samuel,
+            {
+                "categoria": self.alimentacao,
+                "nome": "Cartão Mercado",
+                "valor_total": Decimal("300.00"),
+                "quantidade_parcelas": 3,
+                "dia_vencimento": 20,
+                "data_inicio": today,
+            },
+        )
+
+        self.login_and_select(self.samuel)
+        response = self.client.get(reverse("dashboard"))
+
+        debt_card = response.context["debt_cards"][0]
+        self.assertEqual(debt_card["entries_count"], 2)
+        self.assertEqual(debt_card["single_payment_count"], 1)
+        self.assertEqual(debt_card["installment_purchase_count"], 1)
+        self.assertTrue(debt_card["single_payment_entries"][0]["is_single_payment"])
+        self.assertContains(response, "Compras à vista")
+        self.assertContains(response, "Parcelas deste cartão")
 
     def test_dashboard_groups_names_even_with_accent_variation(self):
         today = timezone.localdate().replace(day=1)
@@ -404,6 +470,12 @@ class FinanceFlowTests(TestCase):
             valor=Decimal("50.00"),
             data=old_date,
         )
+        GastoDebito.objects.create(
+            perfil=self.samuel,
+            valor=Decimal("35.00"),
+            data=old_date,
+            observacao="Cafe antigo",
+        )
         create_gasto_for_profile(
             self.grazi,
             {
@@ -420,4 +492,5 @@ class FinanceFlowTests(TestCase):
 
         self.assertFalse(self.samuel.gastos.exists())
         self.assertFalse(self.samuel.rendas_extras.exists())
+        self.assertFalse(self.samuel.gastos_debito.exists())
         self.assertTrue(self.grazi.gastos.exists())

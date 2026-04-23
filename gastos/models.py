@@ -55,6 +55,26 @@ class Gasto(models.Model):
         return self.parcelas.filter(status=Parcela.Status.PAGO).count()
 
 
+class GastoDebito(models.Model):
+    perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name="gastos_debito")
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    data = models.DateField(default=timezone.localdate)
+    observacao = models.CharField(max_length=255, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-data", "-criado_em")
+
+    def __str__(self):
+        suffix = f" - {self.observacao}" if self.observacao else ""
+        return f"{self.perfil.nome} - Compra no debito{suffix}"
+
+    @property
+    def descricao_exibicao(self):
+        return self.observacao or "Compra no debito"
+
+
 class Parcela(models.Model):
     class Status(models.TextChoices):
         PENDENTE = "pendente", "Pendente"

@@ -1,11 +1,15 @@
-﻿from django.contrib import messages
+﻿from decimal import Decimal
+
+from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from gastos.forms import GastoForm
-from gastos.models import Categoria, Gasto
+from gastos.forms import GastoDebitoForm, GastoForm
+from gastos.models import Categoria, Gasto, GastoDebito
 from gastos.services import (
+    create_debit_expense_for_profile,
     create_gasto_for_profile,
+    delete_debit_expense_for_profile,
     delete_gasto_for_profile,
     get_gastos_for_profile,
     get_history_data,
@@ -22,12 +26,22 @@ from perfis.services import get_active_profile
 def gastos_list(request):
     profile = get_active_profile(request)
     gastos = get_gastos_for_profile(profile)
+    today = timezone.localdate()
+    debit_expenses = list(
+        profile.gastos_debito.filter(data__year=today.year, data__month=today.month)
+        .order_by("-data", "-criado_em")
+    )
+    debit_total = sum((item.valor for item in debit_expenses), start=Decimal("0.00"))
     return render(
         request,
         "gastos/gastos.html",
         {
             "profile": profile,
             "gastos": gastos,
+            "debit_form": GastoDebitoForm(prefix="debit"),
+            "debit_expenses": debit_expenses,
+            "debit_total": debit_total,
+            "debit_reference_date": today,
         },
     )
 
@@ -88,6 +102,33 @@ def delete_gasto(request, gasto_id):
     gasto_nome = gasto.nome
     delete_gasto_for_profile(gasto)
     messages.success(request, f"Gasto {gasto_nome} removido com sucesso.")
+    return redirect("gastos")
+
+
+@active_profile_required
+def add_debit_expense(request):
+    if request.method != "POST":
+        return redirect("gastos")
+
+    profile = get_active_profile(request)
+    form = GastoDebitoForm(request.POST, prefix="debit")
+    if form.is_valid():
+        create_debit_expense_for_profile(profile, form.cleaned_data)
+        messages.success(request, "Compra no debito salva com sucesso.")
+    else:
+        messages.error(request, "Nao foi possivel salvar a compra no debito.")
+    return redirect("gastos")
+
+
+@active_profile_required
+def delete_debit_expense(request, expense_id):
+    if request.method != "POST":
+        return redirect("gastos")
+
+    profile = get_active_profile(request)
+    expense = get_object_or_404(GastoDebito, pk=expense_id, perfil=profile)
+    delete_debit_expense_for_profile(expense)
+    messages.success(request, "Compra no debito removida com sucesso.")
     return redirect("gastos")
 
 
@@ -168,4 +209,3 @@ def export_pdf(request):
         "gastos/print_preview.html",
         get_print_preview_data(profile),
     )
-

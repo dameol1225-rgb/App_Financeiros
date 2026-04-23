@@ -16,6 +16,7 @@ class Command(BaseCommand):
         deleted_gastos = 0
         deleted_parcelas = 0
         deleted_rendas = 0
+        deleted_debitos = 0
 
         for profile in Perfil.objects.all():
             anchor = get_profile_history_anchor(profile)
@@ -28,14 +29,17 @@ class Command(BaseCommand):
             parcelas_count = Parcela.objects.filter(gasto__perfil=profile).count()
             gastos_count = profile.gastos.count()
             rendas_count = profile.rendas_extras.count()
+            debitos_count = profile.gastos_debito.count()
 
             profile.gastos.all().delete()
             profile.rendas_extras.all().delete()
+            profile.gastos_debito.all().delete()
 
             cleaned_profiles += 1
             deleted_gastos += gastos_count
             deleted_parcelas += parcelas_count
             deleted_rendas += rendas_count
+            deleted_debitos += debitos_count
 
         self.stdout.write(
             self.style.SUCCESS(
@@ -43,6 +47,7 @@ class Command(BaseCommand):
                 f"{cleaned_profiles} perfil(is), "
                 f"{deleted_gastos} gasto(s), "
                 f"{deleted_parcelas} parcela(s) e "
-                f"{deleted_rendas} renda(s) extra(s) removidos."
+                f"{deleted_rendas} renda(s) extra(s) e "
+                f"{deleted_debitos} compra(s) no debito removidos."
             )
         )

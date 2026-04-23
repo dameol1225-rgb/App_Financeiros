@@ -6,6 +6,8 @@ from gastos import views
 urlpatterns = [
     path("gastos/", views.gastos_list, name="gastos"),
     path("gastos/novo/", views.add_gasto, name="add_gasto"),
+    path("gastos/debito/novo/", views.add_debit_expense, name="add_debit_expense"),
+    path("gastos/debito/<int:expense_id>/remover/", views.delete_debit_expense, name="delete_debit_expense"),
     path("gastos/<int:gasto_id>/editar/", views.edit_gasto, name="edit_gasto"),
     path("gastos/<int:gasto_id>/remover/", views.delete_gasto, name="delete_gasto"),
     path("gastos/<int:gasto_id>/marcar-pagamento/", views.mark_next_payment, name="mark_next_payment"),

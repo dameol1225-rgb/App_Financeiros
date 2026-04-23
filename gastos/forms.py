@@ -1,6 +1,6 @@
 ﻿from django import forms
 
-from gastos.models import Categoria, Gasto
+from gastos.models import Categoria, Gasto, GastoDebito
 from gastos.services import normalize_expense_name
 
 
@@ -15,7 +15,7 @@ class GastoForm(forms.ModelForm):
                 "autocomplete": "off",
             }
         )
-        self.fields["nome"].help_text = "Escolha um nome já usado ou digite um novo."
+        self.fields["nome"].help_text = "Escolha um cartão já salvo no menu abaixo ou digite um novo nome."
         self.saved_name_choices = []
 
         if profile:
@@ -55,4 +55,36 @@ class GastoForm(forms.ModelForm):
         value = " ".join(self.cleaned_data["nome"].split())
         if not value:
             raise forms.ValidationError("Informe um nome para o gasto.")
+        return value
+
+
+class GastoDebitoForm(forms.ModelForm):
+    class Meta:
+        model = GastoDebito
+        fields = (
+            "valor",
+            "data",
+            "observacao",
+        )
+        widgets = {
+            "valor": forms.NumberInput(attrs={"step": "0.01", "min": "0.01"}),
+            "data": forms.DateInput(attrs={"type": "date"}),
+            "observacao": forms.TextInput(
+                attrs={"placeholder": "Observacao opcional da compra no debito"}
+            ),
+        }
+        labels = {
+            "valor": "Valor",
+            "data": "Data da compra",
+            "observacao": "Observacao",
+        }
+
+    def clean_valor(self):
+        value = self.cleaned_data["valor"]
+        if value <= 0:
+            raise forms.ValidationError("Informe um valor maior que zero.")
+        return value
+
+    def clean_observacao(self):
+        value = " ".join(self.cleaned_data.get("observacao", "").split())
         return value

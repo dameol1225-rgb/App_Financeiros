@@ -122,7 +122,7 @@
                     <p class="eyebrow">Lancamentos</p>
                     <h3>Leitura resumida do mes</h3>
                 </div>
-                <span class="tag">{{ entries|length }} gasto(s)</span>
+                <span class="tag">{{ entries|length }} gasto(s) parcelado(s)</span>
             </div>
 
             <div class="history-list">
@@ -157,6 +157,28 @@
                     </article>
                 {% empty %}
                     <p class="muted">Nenhum gasto encontrado com os filtros informados.</p>
+                {% endfor %}
+            </div>
+
+            <div class="section-heading compact">
+                <div>
+                    <p class="eyebrow">Debito</p>
+                    <h4>Compras a vista do periodo</h4>
+                </div>
+                <span class="tag">{{ debit_entries|length }} compra(s)</span>
+            </div>
+
+            <div class="mini-list">
+                {% for entry in debit_entries %}
+                    <div class="mini-list__item">
+                        <div>
+                            <strong>Compra no debito</strong>
+                            <p class="muted">{{ entry.expense.data|date:"d/m/Y" }}{% if entry.expense.observacao %} - {{ entry.expense.observacao }}{% endif %}</p>
+                        </div>
+                        <span>R$ {{ entry.period_total|floatformat:2 }}</span>
+                    </div>
+                {% empty %}
+                    <p class="muted">Nenhuma compra no debito entrou neste periodo ou neste filtro.</p>
                 {% endfor %}
             </div>
         </article>

@@ -510,6 +510,10 @@ p {
     box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
+.field-select-helper {
+    margin-bottom: 0.35rem;
+}
+
 .field select option {
     color: #0f1f36;
 }
@@ -894,6 +898,58 @@ p {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.8rem;
+}
+
+.expense-breakdown {
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(125, 154, 192, 0.18);
+    background: var(--surface-soft);
+    overflow: hidden;
+}
+
+.expense-breakdown summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    padding: 0.95rem 1rem;
+    cursor: pointer;
+    list-style: none;
+    font-weight: 700;
+}
+
+.expense-breakdown summary::-webkit-details-marker {
+    display: none;
+}
+
+.expense-breakdown--soft summary {
+    color: var(--primary);
+}
+
+.expense-breakdown__list {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0 1rem 1rem;
+}
+
+.expense-breakdown__item {
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(125, 154, 192, 0.16);
+}
+
+.expense-breakdown__head,
+.expense-breakdown__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+.expense-breakdown__meta {
+    margin-top: 0.55rem;
+    color: var(--muted);
 }
 
 .expense-progress__meta {
@@ -1529,6 +1585,8 @@ body.theme-black .history-row,
 body.theme-black .due-pill-card,
 body.theme-black .due-day-card,
 body.theme-black .due-day-item,
+body.theme-black .expense-breakdown,
+body.theme-black .expense-breakdown__item,
 body.theme-black .breakdown-item,
 body.theme-black .chart-insight,
 body.theme-black .accent-card,
@@ -1759,6 +1817,9 @@ body.theme-black .text-action--danger {
     .due-day-item__meta,
     .due-day-card__summary,
     .action-link-card,
+    .expense-breakdown summary,
+    .expense-breakdown__head,
+    .expense-breakdown__meta,
     .print-expense-card__head,
     .print-row-card {
         width: 100%;

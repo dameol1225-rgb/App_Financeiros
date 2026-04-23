@@ -233,30 +233,74 @@
                             <span class="status-pill {% if item.status_value == 'quitado' %}done{% endif %}">{{ item.status_label }}</span>
                         </div>
 
-                        <div class="expense-progress">
-                            <div class="progress-track slim">
-                                <div class="progress-fill" style="width: {{ item.progress_percentage|floatformat:0 }}%"></div>
-                            </div>
-                            <div class="expense-progress__meta">
-                                <span>{{ item.paid_count }}/{{ item.total_count }} pagas</span>
-                                <span>{{ item.progress_percentage|floatformat:0 }}%</span>
-                            </div>
-                        </div>
-
                         <div class="expense-card__stats">
                             <div class="stat-pair">
-                                <span>Restantes</span>
-                                <strong>{{ item.remaining_count }}</strong>
+                                <span>Compras em aberto</span>
+                                <strong>{{ item.entries_count }}</strong>
                             </div>
                             <div class="stat-pair">
-                                <span>Parcela</span>
-                                <strong>R$ {{ item.monthly_value|floatformat:2 }}</strong>
+                                <span>Parceladas</span>
+                                <strong>{{ item.installment_purchase_count }}</strong>
                             </div>
                             <div class="stat-pair">
                                 <span>Em aberto</span>
                                 <strong>R$ {{ item.remaining_total|floatformat:2 }}</strong>
                             </div>
                         </div>
+
+                        {% if item.installment_entries %}
+                            <details class="expense-breakdown">
+                                <summary>
+                                    <span>Parcelas deste cartão</span>
+                                    <strong>{{ item.installment_purchase_count }} compra(s)</strong>
+                                </summary>
+                                <div class="expense-breakdown__list">
+                                    {% for purchase in item.installment_entries %}
+                                        <article class="expense-breakdown__item">
+                                            <div class="expense-breakdown__head">
+                                                <strong>Lançamento {{ purchase.data_inicio|date:"d/m/Y" }}</strong>
+                                                <span>{{ purchase.paid_count }}/{{ purchase.total_count }} paga(s)</span>
+                                            </div>
+                                            <div class="expense-breakdown__meta">
+                                                <span>Parcela atual: R$ {{ purchase.current_due_value|floatformat:2 }}</span>
+                                                <span>Restam {{ purchase.remaining_count }}</span>
+                                            </div>
+                                            <div class="expense-breakdown__meta">
+                                                <span>Em aberto: R$ {{ purchase.remaining_total|floatformat:2 }}</span>
+                                                {% if purchase.next_due_date %}
+                                                    <span>Próximo: {{ purchase.next_due_date|date:"d/m/Y" }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </article>
+                                    {% endfor %}
+                                </div>
+                            </details>
+                        {% endif %}
+
+                        {% if item.single_payment_entries %}
+                            <details class="expense-breakdown expense-breakdown--soft">
+                                <summary>
+                                    <span>Compras à vista</span>
+                                    <strong>{{ item.single_payment_count }} compra(s)</strong>
+                                </summary>
+                                <div class="expense-breakdown__list">
+                                    {% for purchase in item.single_payment_entries %}
+                                        <article class="expense-breakdown__item">
+                                            <div class="expense-breakdown__head">
+                                                <strong>Lançamento {{ purchase.data_inicio|date:"d/m/Y" }}</strong>
+                                                <span>À vista</span>
+                                            </div>
+                                            <div class="expense-breakdown__meta">
+                                                <span>Valor: R$ {{ purchase.remaining_total|floatformat:2 }}</span>
+                                                {% if purchase.next_due_date %}
+                                                    <span>Vence em {{ purchase.next_due_date|date:"d/m/Y" }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </article>
+                                    {% endfor %}
+                                </div>
+                            </details>
+                        {% endif %}
 
                         {% if item.next_due_date %}
                             <p class="muted">Próximo vencimento em {{ item.next_due_date|date:"d/m/Y" }}</p>

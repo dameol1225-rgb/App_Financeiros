@@ -180,4 +180,17 @@
             window.print();
         });
     });
+
+    document.querySelectorAll("[data-expense-name-select]").forEach((select) => {
+        select.addEventListener("change", () => {
+            const targetInput = document.getElementById(select.dataset.targetFieldId);
+
+            if (!targetInput || !select.value) {
+                return;
+            }
+
+            targetInput.value = select.value;
+            targetInput.focus();
+        });
+    });
 });
