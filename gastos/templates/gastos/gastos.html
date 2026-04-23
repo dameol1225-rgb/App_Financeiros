@@ -11,8 +11,8 @@
         <article class="section-card" data-reveal id="credito-form">
             <div class="section-heading">
                 <div>
-                    <h3>Novo gasto no credito</h3>
-                    <p class="muted">Salve a compra e acompanhe o cartao abaixo.</p>
+                    <h3>Novo gasto no crédito</h3>
+                    <p class="muted">Salve a compra e acompanhe o cartão abaixo.</p>
                 </div>
             </div>
 
@@ -25,9 +25,9 @@
                             <select class="field-select-helper" data-expense-name-select data-target-field-id="{{ field.id_for_label }}" {% if not saved_expense_names %}disabled{% endif %}>
                                 <option value="">
                                     {% if saved_expense_names %}
-                                        Escolher um cartao ja salvo
+                                        Escolher um cartão já salvo
                                     {% else %}
-                                        Nenhum cartao salvo ainda
+                                        Nenhum cartão salvo ainda
                                     {% endif %}
                                 </option>
                                 {% for option in saved_expense_names %}
@@ -60,19 +60,19 @@
                         </label>
                     {% endif %}
                 {% endfor %}
-                <button type="submit" class="primary-button">Salvar no credito</button>
+                <button type="submit" class="primary-button">Salvar no crédito</button>
             </form>
         </article>
 
         <article class="section-card" data-reveal>
             <div class="section-heading section-heading--stacked">
                 <div>
-                    <h3>Credito do mes</h3>
+                    <h3>Crédito do mês</h3>
                     <p class="muted">{{ credit_reference_date|date:"F \\d\\e Y" }}</p>
                 </div>
                 <div class="section-meta">
                     <span class="tag">R$ {{ credit_total|floatformat:2 }}</span>
-                    <span class="tag">{{ credit_month_entries|length }} lancamento(s)</span>
+                    <span class="tag">{{ credit_month_entries|length }} lançamento(s)</span>
                 </div>
             </div>
 
@@ -86,7 +86,7 @@
                                 {% if parcela.gasto.quantidade_parcelas > 1 %}
                                     - Parcela {{ parcela.numero }}/{{ parcela.gasto.quantidade_parcelas }}
                                 {% else %}
-                                    - Lancamento unico
+                                    - Lançamento único
                                 {% endif %}
                             </p>
                         </div>
@@ -96,7 +96,7 @@
                         </div>
                     </div>
                 {% empty %}
-                    <p class="muted">Nenhum lancamento no credito neste mes.</p>
+                    <p class="muted">Nenhum lançamento no crédito neste mês.</p>
                 {% endfor %}
             </div>
         </article>
@@ -106,8 +106,8 @@
         <article class="section-card" data-reveal>
             <div class="section-heading">
                 <div>
-                    <h3>Novo gasto no debito</h3>
-                    <p class="muted">Entra no mes, sem virar vencimento.</p>
+                    <h3>Novo gasto no débito</h3>
+                    <p class="muted">Entra no mês, sem virar vencimento.</p>
                 </div>
             </div>
 
@@ -122,14 +122,14 @@
                         {% endif %}
                     </label>
                 {% endfor %}
-                <button type="submit" class="primary-button">Salvar no debito</button>
+                <button type="submit" class="primary-button">Salvar no débito</button>
             </form>
         </article>
 
         <article class="section-card" data-reveal>
             <div class="section-heading section-heading--stacked">
                 <div>
-                    <h3>Debito do mes</h3>
+                    <h3>Débito do mês</h3>
                     <p class="muted">{{ debit_reference_date|date:"F \\d\\e Y" }}</p>
                 </div>
                 <div class="section-meta">
@@ -142,7 +142,7 @@
                 {% for expense in debit_expenses %}
                     <div class="mini-list__item">
                         <div>
-                            <strong>Compra no debito</strong>
+                            <strong>Compra no débito</strong>
                             <p class="muted">
                                 {{ expense.data|date:"d/m/Y" }}
                                 {% if expense.observacao %} - {{ expense.observacao }}{% endif %}
@@ -150,14 +150,14 @@
                         </div>
                         <div class="mini-list__aside">
                             <span>R$ {{ expense.valor|floatformat:2 }}</span>
-                            <form method="post" action="{% url 'delete_debit_expense' expense.id %}" onsubmit="return confirm('Deseja remover esta compra no debito?');">
+                            <form method="post" action="{% url 'delete_debit_expense' expense.id %}" onsubmit="return confirm('Deseja remover esta compra no débito?');">
                                 {% csrf_token %}
                                 <button type="submit" class="text-action text-action--danger">Excluir</button>
                             </form>
                         </div>
                     </div>
                 {% empty %}
-                    <p class="muted">Nenhuma compra no debito neste mes.</p>
+                    <p class="muted">Nenhuma compra no débito neste mês.</p>
                 {% endfor %}
             </div>
         </article>
@@ -234,8 +234,8 @@
             </article>
         {% empty %}
             <article class="section-card empty-state" data-reveal>
-                <h3>Nenhum gasto no credito</h3>
-                <p class="muted">Os cartoes salvos aparecem aqui.</p>
+                <h3>Nenhum gasto no crédito</h3>
+                <p class="muted">Os cartões salvos aparecem aqui.</p>
             </article>
         {% endfor %}
     </section>

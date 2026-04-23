@@ -185,7 +185,7 @@ def add_extra_income(request):
         renda_extra.save()
         messages.success(request, "Renda extra adicionada.")
     else:
-        messages.error(request, "Nao foi possivel salvar a renda extra.")
+        messages.error(request, "Não foi possível salvar a renda extra.")
     return redirect(redirect_to)
 
 
@@ -200,7 +200,7 @@ def edit_extra_income(request, extra_income_id):
             form.save()
             messages.success(request, "Renda extra atualizada.")
             return redirect(get_safe_redirect(request, fallback=reverse("extra_income_page")))
-        messages.error(request, "Nao foi possivel salvar as alteracoes da renda extra.")
+        messages.error(request, "Não foi possível salvar as alterações da renda extra.")
 
     return render(
         request,
@@ -256,7 +256,7 @@ def toggle_extra_sections(request):
     if show_extra_sections:
         messages.success(request, "Funcoes extras exibidas novamente.")
     else:
-        messages.success(request, "Funcoes extras ocultadas para este perfil.")
+        messages.success(request, "Funções extras ocultadas para este perfil.")
     return redirect(redirect_to)
 
 
@@ -270,7 +270,7 @@ def update_profile_image(request):
     form = ProfileImageForm(request.POST, request.FILES)
 
     if not form.is_valid():
-        messages.error(request, "Escolha uma imagem valida para atualizar o perfil.")
+        messages.error(request, "Escolha uma imagem válida para atualizar o perfil.")
         return redirect(redirect_to)
 
     uploaded_image = form.cleaned_data["image"]
@@ -286,7 +286,7 @@ def update_profile_image(request):
         image.save(output, format="WEBP", quality=82, method=6)
         encoded = base64.b64encode(output.getvalue()).decode("ascii")
     except Exception:
-        messages.error(request, "Nao foi possivel processar a imagem enviada.")
+        messages.error(request, "Não foi possível processar a imagem enviada.")
         return redirect(redirect_to)
 
     set_profile_image(profile, f"data:image/webp;base64,{encoded}")

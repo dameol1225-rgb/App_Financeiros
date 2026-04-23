@@ -318,7 +318,7 @@ class FinanceFlowTests(TestCase):
         response = self.client.get(reverse("gastos"))
 
         self.assertContains(response, 'id="credito-form"')
-        self.assertContains(response, "Credito do mes")
+        self.assertContains(response, "Crédito do mês")
         self.assertNotContains(response, "Cadastrar primeiro gasto")
         self.assertNotContains(
             response,

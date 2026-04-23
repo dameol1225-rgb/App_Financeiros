@@ -71,7 +71,7 @@ def gastos_list(request):
             messages.success(request, "Gasto criado e parcelas geradas com sucesso.")
             return redirect("gastos")
 
-        messages.error(request, "Nao foi possivel salvar o gasto no credito. Revise os campos.")
+        messages.error(request, "Não foi possível salvar o gasto no crédito. Revise os campos.")
         return render(
             request,
             "gastos/gastos.html",
@@ -153,9 +153,9 @@ def add_debit_expense(request):
     form = GastoDebitoForm(request.POST, prefix="debit")
     if form.is_valid():
         create_debit_expense_for_profile(profile, form.cleaned_data)
-        messages.success(request, "Compra no debito salva com sucesso.")
+        messages.success(request, "Compra no débito salva com sucesso.")
     else:
-        messages.error(request, "Nao foi possivel salvar a compra no debito.")
+        messages.error(request, "Não foi possível salvar a compra no débito.")
     return redirect("gastos")
 
 
@@ -167,7 +167,7 @@ def delete_debit_expense(request, expense_id):
     profile = get_active_profile(request)
     expense = get_object_or_404(GastoDebito, pk=expense_id, perfil=profile)
     delete_debit_expense_for_profile(expense)
-    messages.success(request, "Compra no debito removida com sucesso.")
+    messages.success(request, "Compra no débito removida com sucesso.")
     return redirect("gastos")
 
 
@@ -182,7 +182,7 @@ def mark_next_payment(request, gasto_id):
     if parcela:
         messages.success(request, f"Parcela {parcela.numero} marcada como paga.")
     else:
-        messages.info(request, "Esse gasto ja esta quitado.")
+        messages.info(request, "Esse gasto já está quitado.")
     return redirect("gastos")
 
 

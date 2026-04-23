@@ -1,7 +1,7 @@
 ﻿{% extends "base.html" %}
 
 {% block title %}Imprimir | {{ app_name }}{% endblock %}
-{% block page_title %}Visualizacao de impressao{% endblock %}
+{% block page_title %}Visualização de impressão{% endblock %}
 {% block eyebrow %}Resumo pronto para imprimir{% endblock %}
 {% block body_class %}print-preview-page{% endblock %}
 
@@ -14,7 +14,7 @@
     <section class="print-toolbar no-print" data-reveal>
         <div>
             <h3>Revise antes de imprimir</h3>
-            <p class="muted">A tela abaixo fica mais leve para leitura e abre pronta para imprimir ou salvar em PDF quando voce quiser.</p>
+            <p class="muted">A tela abaixo fica mais leve para leitura e abre pronta para imprimir ou salvar em PDF quando você quiser.</p>
         </div>
         <button type="button" class="primary-button" data-print-trigger>Imprimir / Salvar PDF</button>
     </section>
@@ -22,7 +22,7 @@
     <article class="print-sheet" data-reveal>
         <header class="print-sheet__header">
             <div>
-                <p class="eyebrow">Relatorio financeiro</p>
+                <p class="eyebrow">Relatório financeiro</p>
                 <h3>{{ app_name }}</h3>
                 <p class="muted">Perfil {{ profile.nome }} - gerado em {{ generated_at|date:"d/m/Y" }}</p>
             </div>
@@ -42,7 +42,7 @@
                 <strong>R$ {{ summary.extra_total|floatformat:2 }}</strong>
             </article>
             <article>
-                <span>Saidas</span>
+                <span>Saídas</span>
                 <strong>R$ {{ summary.expense_total|floatformat:2 }}</strong>
             </article>
             <article>
@@ -75,7 +75,7 @@
             <div class="section-heading compact">
                 <div>
                     <p class="eyebrow">Rendas extras</p>
-                    <h4>Lancamentos adicionais</h4>
+                    <h4>Lançamentos adicionais</h4>
                 </div>
             </div>
             <div class="print-stack-list">
@@ -97,7 +97,7 @@
             <div class="section-heading compact">
                 <div>
                     <p class="eyebrow">Gastos</p>
-                    <h4>Resumo das dividas</h4>
+                    <h4>Resumo das dívidas</h4>
                 </div>
             </div>
             <div class="print-expense-grid">
@@ -113,7 +113,7 @@
                         <div class="print-expense-card__stats">
                             <span>Total: R$ {{ item.gasto.valor_total|floatformat:2 }}</span>
                             <span>Restantes: {{ item.remaining_count }}</span>
-                            <span>{% if item.next_due_date %}Proximo: {{ item.next_due_date|date:"d/m/Y" }}{% else %}Quitado{% endif %}</span>
+                            <span>{% if item.next_due_date %}Próximo: {{ item.next_due_date|date:"d/m/Y" }}{% else %}Quitado{% endif %}</span>
                         </div>
                     </article>
                 {% empty %}
@@ -125,21 +125,21 @@
         <section class="print-section">
             <div class="section-heading compact">
                 <div>
-                    <p class="eyebrow">Debito</p>
-                    <h4>Compras no debito</h4>
+                    <p class="eyebrow">Débito</p>
+                    <h4>Compras no débito</h4>
                 </div>
             </div>
             <div class="print-stack-list">
                 {% for expense in debit_expenses %}
                     <article class="print-row-card">
                         <div>
-                            <strong>Compra no debito</strong>
+                            <strong>Compra no débito</strong>
                             <p class="muted">{{ expense.data|date:"d/m/Y" }}{% if expense.observacao %} - {{ expense.observacao }}{% endif %}</p>
                         </div>
                         <span>R$ {{ expense.valor|floatformat:2 }}</span>
                     </article>
                 {% empty %}
-                    <p class="muted">Nenhuma compra no debito cadastrada.</p>
+                    <p class="muted">Nenhuma compra no débito cadastrada.</p>
                 {% endfor %}
             </div>
         </section>

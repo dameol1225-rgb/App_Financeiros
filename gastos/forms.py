@@ -70,13 +70,13 @@ class GastoDebitoForm(forms.ModelForm):
             "valor": forms.NumberInput(attrs={"step": "0.01", "min": "0.01"}),
             "data": forms.DateInput(attrs={"type": "date"}),
             "observacao": forms.TextInput(
-                attrs={"placeholder": "Observacao opcional da compra no debito"}
+                attrs={"placeholder": "Observação opcional da compra no débito"}
             ),
         }
         labels = {
             "valor": "Valor",
             "data": "Data da compra",
-            "observacao": "Observacao",
+            "observacao": "Observação",
         }
 
     def clean_valor(self):
