@@ -36,7 +36,7 @@
                             </a>
                             <a href="{% url 'historico' %}" class="{% if current == 'historico' %}is-active{% endif %}">
                                 <i data-lucide="history"></i>
-                                <span>Historico</span>
+                                <span>Histórico</span>
                             </a>
                             <a href="{% url 'export_pdf' %}" class="{% if current == 'export_pdf' %}is-active{% endif %}">
                                 <i data-lucide="printer"></i>
@@ -58,7 +58,7 @@
             <div class="content-shell">
                 <header class="topbar">
                     <div>
-                        <p class="eyebrow">{% block eyebrow %}Organizacao financeira{% endblock %}</p>
+                        <p class="eyebrow">{% block eyebrow %}Organização financeira{% endblock %}</p>
                         <h2>{% block page_title %}{{ app_name }}{% endblock %}</h2>
                     </div>
                     <div class="topbar-controls">
@@ -120,7 +120,7 @@
                             <div class="mobile-overview__content">
                                 <p class="eyebrow">Perfil ativo</p>
                                 <strong>{{ active_profile.nome }}</strong>
-                                <p class="muted">Abrir configuracoes, preferencias e recebimentos fixos.</p>
+                                <p class="muted">Abrir configurações, preferências e recebimentos fixos.</p>
                             </div>
                             <i data-lucide="chevron-right" class="mobile-overview__arrow"></i>
                         </a>
@@ -132,8 +132,8 @@
                         <section class="alert-banner" data-reveal>
                             <div>
                                 <p class="eyebrow">Aviso de limpeza anual</p>
-                                <strong>Seu historico sera limpo automaticamente em {{ cleanup_notice.cleanup_date|date:"d/m/Y" }}.</strong>
-                                <p class="muted">Use a visualizacao de impressao para guardar um resumo antes dessa data.</p>
+                                <strong>Seu histórico será limpo automaticamente em {{ cleanup_notice.cleanup_date|date:"d/m/Y" }}.</strong>
+                                <p class="muted">Use a visualização de impressão para guardar um resumo antes dessa data.</p>
                             </div>
                             <span class="alert-chip">{{ cleanup_notice.days_left }} dia(s)</span>
                         </section>
@@ -164,7 +164,7 @@
                         </a>
                         <a href="{% url 'historico' %}" class="{% if current == 'historico' %}is-active{% endif %}">
                             <i data-lucide="history"></i>
-                            <span>Historico</span>
+                            <span>Histórico</span>
                         </a>
                         <a href="{% url 'export_pdf' %}" class="{% if current == 'export_pdf' %}is-active{% endif %}">
                             <i data-lucide="printer"></i>

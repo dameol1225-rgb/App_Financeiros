@@ -260,6 +260,60 @@ class FinanceFlowTests(TestCase):
         self.assertRedirects(response, reverse("gastos"))
         self.assertFalse(Gasto.objects.filter(pk=gasto.id).exists())
 
+    def test_add_gasto_form_offers_existing_names_as_suggestions(self):
+        today = timezone.localdate().replace(day=1)
+        create_gasto_for_profile(
+            self.samuel,
+            {
+                "categoria": self.alimentacao,
+                "nome": "Carro",
+                "valor_total": Decimal("100.00"),
+                "quantidade_parcelas": 2,
+                "dia_vencimento": 20,
+                "data_inicio": today,
+            },
+        )
+
+        self.login_and_select(self.samuel)
+        response = self.client.get(reverse("add_gasto"))
+
+        self.assertContains(response, 'list="expense-name-options"')
+        self.assertContains(response, '<option value="Carro">', html=True)
+
+    def test_dashboard_groups_active_debts_by_name(self):
+        today = timezone.localdate().replace(day=1)
+        create_gasto_for_profile(
+            self.samuel,
+            {
+                "categoria": self.transporte,
+                "nome": "Carro",
+                "valor_total": Decimal("120.00"),
+                "quantidade_parcelas": 2,
+                "dia_vencimento": 5,
+                "data_inicio": today,
+            },
+        )
+        create_gasto_for_profile(
+            self.samuel,
+            {
+                "categoria": self.transporte,
+                "nome": "Carro",
+                "valor_total": Decimal("180.00"),
+                "quantidade_parcelas": 3,
+                "dia_vencimento": 20,
+                "data_inicio": today,
+            },
+        )
+
+        self.login_and_select(self.samuel)
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(len(response.context["debt_cards"]), 1)
+        debt_card = response.context["debt_cards"][0]
+        self.assertEqual(debt_card["nome"], "Carro")
+        self.assertEqual(debt_card["remaining_count"], 5)
+        self.assertEqual(debt_card["remaining_total"], Decimal("300.00"))
+
     def test_purge_financial_history_removes_only_due_profiles(self):
         old_date = timezone.localdate() - timedelta(days=370)
         recent_date = timezone.localdate() - timedelta(days=20)

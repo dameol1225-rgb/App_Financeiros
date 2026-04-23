@@ -27,6 +27,13 @@
                     <label class="field">
                         <span>{{ field.label }}</span>
                         {{ field }}
+                        {% if field.name == "nome" %}
+                            <datalist id="expense-name-options">
+                                {% for option in saved_expense_names %}
+                                    <option value="{{ option }}"></option>
+                                {% endfor %}
+                            </datalist>
+                        {% endif %}
                         {% if field.help_text %}
                             <small class="muted">{{ field.help_text }}</small>
                         {% endif %}
@@ -50,28 +57,28 @@
                 {% if is_edit_mode %}
                     <div class="mini-list__item">
                         <strong>1.</strong>
-                        <p class="muted">As alteracoes de nome, valor, parcelas e vencimento ficam salvas direto no banco.</p>
+                        <p class="muted">As alterações de nome, valor, parcelas e vencimento ficam salvas direto no banco.</p>
                     </div>
                     <div class="mini-list__item">
                         <strong>2.</strong>
-                        <p class="muted">Ao recalcular o gasto, o app tenta preservar a quantidade de parcelas ja marcadas como pagas.</p>
+                        <p class="muted">Ao recalcular o gasto, o app tenta preservar a quantidade de parcelas já marcadas como pagas.</p>
                     </div>
                     <div class="mini-list__item">
                         <strong>3.</strong>
-                        <p class="muted">Se voce reduzir a quantidade de parcelas abaixo do que ja foi pago, o gasto pode terminar quitado.</p>
+                        <p class="muted">Se você reduzir a quantidade de parcelas abaixo do que já foi pago, o gasto pode terminar quitado.</p>
                     </div>
                 {% else %}
                     <div class="mini-list__item">
                         <strong>1.</strong>
-                        <p class="muted">Voce informa o valor total, a quantidade de parcelas e o dia de vencimento.</p>
+                        <p class="muted">Você informa o valor total, a quantidade de parcelas e o dia de vencimento.</p>
                     </div>
                     <div class="mini-list__item">
                         <strong>2.</strong>
-                        <p class="muted">O app cria todas as parcelas com vencimento mensal consistente, inclusive em virada de mes e ano.</p>
+                        <p class="muted">O app cria todas as parcelas com vencimento mensal consistente, inclusive em virada de mês e ano.</p>
                     </div>
                     <div class="mini-list__item">
                         <strong>3.</strong>
-                        <p class="muted">O status do gasto vira quitado automaticamente quando todas as parcelas forem pagas.</p>
+                        <p class="muted">Se você repetir um nome já usado, o dashboard soma esse compromisso no mesmo card de dívidas ativas.</p>
                     </div>
                 {% endif %}
             </div>

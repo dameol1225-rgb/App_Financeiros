@@ -40,6 +40,10 @@ def split_installments(total_amount, total_installments):
     return values
 
 
+def normalize_expense_name(name):
+    return " ".join((name or "").split()).casefold()
+
+
 def sync_gasto_status(gasto):
     has_pending = gasto.parcelas.filter(status=Parcela.Status.PENDENTE).exists()
     new_status = Gasto.Status.ATIVO if has_pending else Gasto.Status.QUITADO
@@ -166,6 +170,63 @@ def serialize_gasto_card(gasto):
     }
 
 
+def serialize_grouped_debt_cards(gastos):
+    grouped_cards = {}
+
+    for gasto in gastos:
+        card = serialize_gasto_card(gasto)
+        key = normalize_expense_name(gasto.nome)
+        if not key:
+            continue
+
+        group = grouped_cards.setdefault(
+            key,
+            {
+                "nome": gasto.nome,
+                "categoria_nome": gasto.categoria.nome,
+                "status_value": Gasto.Status.ATIVO,
+                "status_label": Gasto.Status.ATIVO.label,
+                "paid_count": 0,
+                "total_count": 0,
+                "remaining_count": 0,
+                "remaining_total": ZERO,
+                "monthly_value": ZERO,
+                "next_due_date": None,
+                "items_count": 0,
+            },
+        )
+
+        group["paid_count"] += card["paid_count"]
+        group["total_count"] += card["total_count"]
+        group["remaining_count"] += card["remaining_count"]
+        group["remaining_total"] += card["remaining_total"]
+        group["monthly_value"] += card["monthly_value"]
+        group["items_count"] += 1
+
+        next_due_date = card["next_due_date"]
+        if next_due_date and (group["next_due_date"] is None or next_due_date < group["next_due_date"]):
+            group["next_due_date"] = next_due_date
+
+    serialized_groups = []
+    for group in grouped_cards.values():
+        progress = ZERO
+        if group["total_count"]:
+            progress = quantize_money(
+                (Decimal(group["paid_count"]) / Decimal(group["total_count"])) * Decimal("100")
+            )
+        group["progress_percentage"] = progress
+        serialized_groups.append(group)
+
+    serialized_groups.sort(
+        key=lambda item: (
+            item["next_due_date"] is None,
+            item["next_due_date"] or timezone.localdate(),
+            item["nome"].lower(),
+        )
+    )
+    return serialized_groups
+
+
 def build_due_buckets(parcels):
     buckets = []
     for day, label in DUE_DAY_CHOICES:
@@ -186,18 +247,18 @@ def get_month_status(projected_balance, commitment_total):
         return {
             "label": "Mes no verde",
             "tone": "positive",
-            "message": "As contas previstas ainda deixam uma folga saudavel para fechar o periodo.",
+            "message": "",
         }
     if projected_balance >= ZERO:
         return {
             "label": "Mes em atencao",
             "tone": "warning",
-            "message": "Voce fecha positivo, mas vale acompanhar os proximos vencimentos de perto.",
+            "message": "",
         }
     return {
         "label": "Mes apertado",
         "tone": "danger",
-        "message": "Os gastos previstos ultrapassam o total de receitas do periodo.",
+        "message": "",
     }
 
 
@@ -270,7 +331,7 @@ def get_dashboard_data(profile, filters=None, today=None):
         .filter(status=Gasto.Status.ATIVO)
         .order_by("dia_vencimento", "nome")
     )
-    debt_cards = [serialize_gasto_card(gasto) for gasto in active_gastos_qs]
+    debt_cards = serialize_grouped_debt_cards(active_gastos_qs)
 
     category_totals = defaultdict(lambda: ZERO)
     for parcela in month_parcels:

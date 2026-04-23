@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Perfil | {{ app_name }}{% endblock %}
-{% block page_title %}Configuracoes do Perfil{% endblock %}
+{% block page_title %}Configurações do Perfil{% endblock %}
 {% block eyebrow %}Perfil de {{ profile.nome }}{% endblock %}
 
 {% block topbar_actions %}
@@ -29,7 +29,7 @@
                 {% endif %}
                 <div>
                     <strong>{{ profile.nome }}</strong>
-                    <p class="muted">Aqui voce ajusta imagem, tema, funcoes extras e recebimentos fixos.</p>
+                    <p class="muted">Aqui você ajusta imagem, tema, funções extras e recebimentos fixos.</p>
                 </div>
             </div>
 
@@ -56,7 +56,7 @@
         <article class="section-card" data-reveal>
             <div class="section-heading">
                 <div>
-                    <p class="eyebrow">Preferencias</p>
+                    <p class="eyebrow">Preferências</p>
                     <h3>Tema e visual</h3>
                 </div>
             </div>
@@ -84,9 +84,9 @@
                 <input type="hidden" name="mostrar_funcoes_extras" value="{% if profile.mostrar_funcoes_extras %}0{% else %}1{% endif %}">
                 <button type="submit" class="preference-option preference-option--secondary">
                     {% if profile.mostrar_funcoes_extras %}
-                        Ocultar funcoes extras no dashboard
+                        Ocultar funções extras no dashboard
                     {% else %}
-                        Mostrar funcoes extras no dashboard
+                        Mostrar funções extras no dashboard
                     {% endif %}
                 </button>
             </form>

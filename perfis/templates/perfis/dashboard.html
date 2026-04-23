@@ -13,7 +13,7 @@
         <div class="filter-menu__panel">
             <form method="get" class="filter-menu__form">
                 <label class="field field--compact">
-                    <span>Mes</span>
+                    <span>Mês</span>
                     <select name="due_mes">
                         {% for option in due_month_options %}
                             <option value="{{ option }}" {% if selected_due_month == option %}selected{% endif %}>{{ option }}</option>
@@ -41,7 +41,7 @@
                 </label>
 
                 <label class="field field--compact">
-                    <span>Situacao</span>
+                    <span>Situação</span>
                     <select name="due_status">
                         {% for value, label in due_status_options %}
                             <option value="{{ value }}" {% if selected_due_status == value %}selected{% endif %}>{{ label }}</option>
@@ -63,7 +63,7 @@
         <article class="hero-panel month-panel" data-reveal>
             <div class="hero-panel__header">
                 <div>
-                    <p class="eyebrow">Fechamento do mes</p>
+                    <p class="eyebrow">Fechamento do mês</p>
                     <h3>{{ reference_date|date:"F \\d\\e Y" }}</h3>
                 </div>
                 <span class="status-chip {{ month_status.tone }}">{{ month_status.label }}</span>
@@ -77,7 +77,7 @@
 
                 <div class="hero-stat-stack hero-stat-stack--compact hero-stat-stack--single">
                     <div class="stat-tile">
-                        <span>Receita do mes</span>
+                        <span>Receita do mês</span>
                         <strong>R$ {{ total_income|floatformat:2 }}</strong>
                     </div>
                 </div>
@@ -107,12 +107,12 @@
             <article class="metric-card tone-cyan" data-reveal>
                 <p>Renda extra</p>
                 <strong>R$ {{ extra_total|floatformat:2 }}</strong>
-                <span>No periodo atual</span>
+                <span>No período atual</span>
             </article>
             <article class="metric-card tone-slate" data-reveal>
-                <p>Saidas</p>
+                <p>Saídas</p>
                 <strong>R$ {{ expense_total|floatformat:2 }}</strong>
-                <span>Parcelas do mes</span>
+                <span>Parcelas do mês</span>
             </article>
         </div>
     </section>
@@ -120,7 +120,7 @@
     <section class="section-card section-card--dense section-card--expanded" data-reveal>
             <div class="section-heading section-heading--stacked">
                 <div>
-                    <p class="eyebrow">Proximos vencimentos</p>
+                    <p class="eyebrow">Próximos vencimentos</p>
                     <h3>{{ due_reference_start|date:"F \\d\\e Y" }}</h3>
                 </div>
                 <div class="section-meta">
@@ -191,7 +191,7 @@
 
             <div class="mini-list compact-list">
                 <div class="section-heading compact">
-                    <h4>Ultimos lancamentos</h4>
+                    <h4>Últimos lançamentos</h4>
                 </div>
                 {% for item in extra_income %}
                     <div class="mini-list__item">
@@ -212,7 +212,7 @@
                         </div>
                     </div>
                 {% empty %}
-                    <p class="muted">Nenhuma renda extra registrada neste mes.</p>
+                    <p class="muted">Nenhuma renda extra registrada neste mês.</p>
                 {% endfor %}
             </div>
         </section>
@@ -220,7 +220,7 @@
         <section class="section-card" data-reveal>
             <div class="section-heading">
                 <div>
-                    <p class="eyebrow">Dividas ativas</p>
+                    <p class="eyebrow">Dívidas ativas</p>
                     <h3>Parcelas restantes</h3>
                 </div>
                 <a href="{% url 'gastos' %}" class="ghost-button">Ver todos</a>
@@ -231,10 +231,10 @@
                     <article class="expense-card clean expense-card--soft">
                         <div class="expense-card__top">
                             <div>
-                                <h4>{{ item.gasto.nome }}</h4>
-                                <p class="muted">{{ item.gasto.categoria.nome }}</p>
+                                <h4>{{ item.nome }}</h4>
+                                <p class="muted">{{ item.categoria_nome }}</p>
                             </div>
-                            <span class="status-pill {% if item.gasto.status == 'quitado' %}done{% endif %}">{{ item.gasto.get_status_display }}</span>
+                            <span class="status-pill {% if item.status_value == 'quitado' %}done{% endif %}">{{ item.status_label }}</span>
                         </div>
 
                         <div class="expense-progress">
@@ -263,7 +263,7 @@
                         </div>
 
                         {% if item.next_due_date %}
-                            <p class="muted">Proximo vencimento em {{ item.next_due_date|date:"d/m/Y" }}</p>
+                            <p class="muted">Próximo vencimento em {{ item.next_due_date|date:"d/m/Y" }}</p>
                         {% endif %}
                     </article>
                 {% empty %}

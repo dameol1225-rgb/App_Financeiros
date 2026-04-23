@@ -1,7 +1,7 @@
 ﻿{% extends "base.html" %}
 
 {% block title %}Gastos | {{ app_name }}{% endblock %}
-{% block page_title %}Gastos e dividas{% endblock %}
+{% block page_title %}Gastos e dívidas{% endblock %}
 {% block eyebrow %}Controle de {{ profile.nome }}{% endblock %}
 
 {% block topbar_actions %}
@@ -13,7 +13,7 @@
     <section class="page-intro intro-banner" data-reveal>
         <div>
             <h3>Corrija, remova e acompanhe os gastos com mais controle</h3>
-            <p class="muted">Qualquer edicao ou remocao aqui ja fica salva no banco e refletida nas parcelas do gasto.</p>
+            <p class="muted">Qualquer edição ou remoção aqui já fica salva no banco e refletida nas parcelas do gasto.</p>
         </div>
         <a href="{% url 'add_gasto' %}" class="primary-button">Adicionar gasto</a>
     </section>
@@ -65,7 +65,7 @@
                 <div class="tag-row compact-tags">
                     <span class="tag">Em aberto: R$ {{ item.remaining_total|floatformat:2 }}</span>
                     {% if item.next_due_date %}
-                        <span class="tag">Proximo: {{ item.next_due_date|date:"d/m/Y" }}</span>
+                        <span class="tag">Próximo: {{ item.next_due_date|date:"d/m/Y" }}</span>
                     {% else %}
                         <span class="tag tag-success">Tudo pago</span>
                     {% endif %}
@@ -74,11 +74,11 @@
                 <div class="inline-actions two-actions">
                     <form method="post" action="{% url 'mark_next_payment' item.gasto.id %}">
                         {% csrf_token %}
-                        <button type="submit" class="primary-button small-button">Marcar proxima paga</button>
+                        <button type="submit" class="primary-button small-button">Marcar próxima paga</button>
                     </form>
                     <form method="post" action="{% url 'undo_payment' item.gasto.id %}">
                         {% csrf_token %}
-                        <button type="submit" class="ghost-button small-button">Desfazer ultimo pagamento</button>
+                        <button type="submit" class="ghost-button small-button">Desfazer último pagamento</button>
                     </form>
                 </div>
             </article>

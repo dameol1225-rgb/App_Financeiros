@@ -35,8 +35,7 @@ def gastos_list(request):
 @active_profile_required
 def add_gasto(request):
     profile = get_active_profile(request)
-    form = GastoForm(request.POST or None)
-    form.fields["categoria"].queryset = Categoria.objects.order_by("nome")
+    form = GastoForm(request.POST or None, profile=profile)
 
     if request.method == "POST" and form.is_valid():
         create_gasto_for_profile(profile, form.cleaned_data)
@@ -50,6 +49,7 @@ def add_gasto(request):
             "form": form,
             "profile": profile,
             "is_edit_mode": False,
+            "saved_expense_names": form.saved_name_choices,
         },
     )
 
@@ -58,8 +58,7 @@ def add_gasto(request):
 def edit_gasto(request, gasto_id):
     profile = get_active_profile(request)
     gasto = get_object_or_404(Gasto, pk=gasto_id, perfil=profile)
-    form = GastoForm(request.POST or None, instance=gasto)
-    form.fields["categoria"].queryset = Categoria.objects.order_by("nome")
+    form = GastoForm(request.POST or None, instance=gasto, profile=profile)
 
     if request.method == "POST" and form.is_valid():
         update_gasto_for_profile(gasto, form.cleaned_data)
@@ -74,6 +73,7 @@ def edit_gasto(request, gasto_id):
             "profile": profile,
             "gasto": gasto,
             "is_edit_mode": True,
+            "saved_expense_names": form.saved_name_choices,
         },
     )
 
