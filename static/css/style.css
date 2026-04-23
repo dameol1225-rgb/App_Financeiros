@@ -1,10 +1,11 @@
 ﻿:root {
     --bg: #f2f7fb;
     --bg-soft: #e9f1fb;
-    --surface: rgba(255, 255, 255, 0.94);
-    --surface-soft: #f8fbff;
+    --surface: linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.34));
+    --surface-soft: linear-gradient(145deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.24));
     --surface-strong: #0f2c5c;
-    --surface-border: rgba(125, 154, 192, 0.25);
+    --surface-border: rgba(255, 255, 255, 0.42);
+    --surface-border-soft: rgba(125, 154, 192, 0.2);
     --text: #0f1f36;
     --muted: #5f728a;
     --primary: #2563eb;
@@ -13,7 +14,12 @@
     --success: #16a34a;
     --warning: #f59e0b;
     --danger: #dc2626;
-    --shadow: 0 24px 60px rgba(15, 31, 54, 0.12);
+    --glass-fill: rgba(255, 255, 255, 0.22);
+    --glass-fill-soft: rgba(255, 255, 255, 0.14);
+    --glass-fill-strong: rgba(255, 255, 255, 0.42);
+    --glass-highlight: rgba(255, 255, 255, 0.56);
+    --glass-blur: blur(24px) saturate(180%);
+    --shadow: 0 24px 60px rgba(15, 31, 54, 0.14);
     --radius-lg: 28px;
     --radius-md: 20px;
     --radius-sm: 14px;
@@ -34,18 +40,20 @@ body {
     font-family: "Manrope", sans-serif;
     color: var(--text);
     background:
+        radial-gradient(circle at 14% 10%, rgba(255, 255, 255, 0.92), transparent 18%),
         radial-gradient(circle at top left, rgba(14, 165, 233, 0.18), transparent 30%),
         radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 22%),
-        linear-gradient(180deg, #f9fcff 0%, #f2f7fb 42%, #eaf1fb 100%);
+        linear-gradient(180deg, #f9fcff 0%, #eef4fd 42%, #e7eef9 100%);
 }
 
 body.theme-black {
     --bg: #04070d;
     --bg-soft: #0b1120;
-    --surface: rgba(8, 12, 20, 0.92);
-    --surface-soft: #0f172a;
+    --surface: linear-gradient(145deg, rgba(10, 15, 28, 0.82), rgba(15, 23, 42, 0.52));
+    --surface-soft: linear-gradient(145deg, rgba(15, 23, 42, 0.66), rgba(15, 23, 42, 0.34));
     --surface-strong: #020617;
-    --surface-border: rgba(71, 85, 105, 0.55);
+    --surface-border: rgba(148, 163, 184, 0.2);
+    --surface-border-soft: rgba(71, 85, 105, 0.42);
     --text: #e5eefc;
     --muted: #94a3b8;
     --primary: #3b82f6;
@@ -54,6 +62,11 @@ body.theme-black {
     --success: #22c55e;
     --warning: #f59e0b;
     --danger: #ef4444;
+    --glass-fill: rgba(15, 23, 42, 0.34);
+    --glass-fill-soft: rgba(148, 163, 184, 0.08);
+    --glass-fill-strong: rgba(15, 23, 42, 0.54);
+    --glass-highlight: rgba(255, 255, 255, 0.08);
+    --glass-blur: blur(24px) saturate(160%);
     --shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
     background:
         radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 28%),
@@ -1973,3 +1986,249 @@ body.theme-black .text-action--danger {
     }
 }
 
+
+@media screen {
+    .profile-shortcut,
+    .icon-button,
+    .preference-menu__panel,
+    .filter-menu__panel,
+    .preference-option,
+    .upload-trigger,
+    .ghost-button {
+        background: linear-gradient(145deg, var(--glass-fill-strong), var(--glass-fill));
+        border-color: var(--surface-border);
+        box-shadow: inset 0 1px 0 var(--glass-highlight), 0 12px 28px rgba(15, 31, 54, 0.08);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+        background: linear-gradient(145deg, var(--glass-fill-strong), var(--glass-fill));
+        border-color: var(--surface-border-soft);
+        box-shadow: inset 0 1px 0 var(--glass-highlight);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.44));
+    }
+
+    .hero-panel,
+    .panel-card,
+    .section-card,
+    .metric-card,
+    .expense-card,
+    .profile-card,
+    .history-card,
+    .brand-card,
+    .sidebar-profile,
+    .alert-banner,
+    .print-sheet,
+    .print-toolbar {
+        border-color: var(--surface-border);
+        box-shadow: var(--shadow), inset 0 1px 0 var(--glass-highlight);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        isolation: isolate;
+    }
+
+    .hero-panel::before,
+    .panel-card::before,
+    .section-card::before,
+    .metric-card::before,
+    .expense-card::before,
+    .profile-card::before,
+    .history-card::before,
+    .brand-card::before,
+    .sidebar-profile::before,
+    .alert-banner::before,
+    .print-sheet::before,
+    .print-toolbar::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 40%);
+        pointer-events: none;
+    }
+
+    .hero-panel {
+        background:
+            radial-gradient(circle at top left, rgba(125, 211, 252, 0.32), transparent 38%),
+            radial-gradient(circle at bottom right, rgba(74, 222, 128, 0.18), transparent 26%),
+            linear-gradient(145deg, rgba(12, 33, 74, 0.88) 0%, rgba(19, 56, 123, 0.72) 54%, rgba(14, 165, 233, 0.48) 100%);
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .metric-card.tone-blue {
+        background: linear-gradient(145deg, rgba(18, 59, 133, 0.82), rgba(37, 99, 235, 0.48));
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .metric-card.tone-cyan {
+        background: linear-gradient(145deg, rgba(15, 76, 129, 0.82), rgba(14, 165, 233, 0.46));
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .metric-card.tone-green {
+        background: linear-gradient(145deg, rgba(12, 108, 91, 0.82), rgba(22, 163, 74, 0.46));
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .metric-card.tone-slate {
+        background: linear-gradient(145deg, rgba(21, 49, 84, 0.82), rgba(29, 78, 216, 0.46));
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .stat-tile,
+    .meter-block {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+    }
+
+    .stat-tile {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+        border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .meter-block {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+        border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .tag,
+    .status-pill,
+    .status-chip,
+    .alert-chip {
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+    }
+
+    .tag {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.12));
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+    }
+
+    .mini-list__item,
+    .stat-pair,
+    .history-row,
+    .due-pill-card,
+    .print-summary-grid article,
+    .expense-breakdown,
+    .expense-breakdown__item,
+    .breakdown-item,
+    .chart-insight,
+    .chart-card-shell,
+    .due-list-card,
+    .print-mini-card,
+    .print-row-card,
+    .print-expense-card,
+    .due-day-card,
+    .due-day-item,
+    .mobile-overview__card,
+    .settings-profile-card,
+    .action-link-card {
+        background: linear-gradient(145deg, var(--glass-fill-strong), var(--glass-fill));
+        border-color: var(--surface-border-soft);
+        box-shadow: inset 0 1px 0 var(--glass-highlight);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+    }
+
+    .due-pill-card,
+    .chart-insight,
+    .chart-card-shell,
+    .due-day-item,
+    .expense-breakdown__item {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2));
+    }
+
+    .alert-banner {
+        background: linear-gradient(145deg, rgba(255, 251, 235, 0.62), rgba(255, 255, 255, 0.28));
+    }
+
+    .bottom-nav {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.38));
+        border-top-color: var(--surface-border);
+        box-shadow: 0 -18px 36px rgba(15, 31, 54, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.42);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+    }
+
+    body.theme-black .field input:focus,
+    body.theme-black .field select:focus,
+    body.theme-black .field textarea:focus {
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.56));
+    }
+
+    body.theme-black .hero-panel {
+        background:
+            radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 40%),
+            radial-gradient(circle at bottom right, rgba(45, 212, 191, 0.12), transparent 28%),
+            linear-gradient(145deg, rgba(8, 17, 34, 0.92) 0%, rgba(19, 32, 59, 0.78) 54%, rgba(15, 61, 110, 0.56) 100%);
+    }
+
+    body.theme-black .metric-card.tone-blue,
+    body.theme-black .metric-card.tone-cyan,
+    body.theme-black .metric-card.tone-green,
+    body.theme-black .metric-card.tone-slate,
+    body.theme-black .mini-list__item,
+    body.theme-black .stat-pair,
+    body.theme-black .history-row,
+    body.theme-black .due-pill-card,
+    body.theme-black .expense-breakdown,
+    body.theme-black .expense-breakdown__item,
+    body.theme-black .breakdown-item,
+    body.theme-black .chart-insight,
+    body.theme-black .chart-card-shell,
+    body.theme-black .due-list-card,
+    body.theme-black .print-mini-card,
+    body.theme-black .print-row-card,
+    body.theme-black .print-expense-card,
+    body.theme-black .due-day-card,
+    body.theme-black .due-day-item,
+    body.theme-black .mobile-overview__card,
+    body.theme-black .settings-profile-card,
+    body.theme-black .action-link-card,
+    body.theme-black .bottom-nav {
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.74), rgba(15, 23, 42, 0.42));
+    }
+
+    body.theme-black .profile-shortcut,
+    body.theme-black .icon-button,
+    body.theme-black .preference-menu__panel,
+    body.theme-black .filter-menu__panel,
+    body.theme-black .preference-option,
+    body.theme-black .upload-trigger,
+    body.theme-black .ghost-button,
+    body.theme-black .field input,
+    body.theme-black .field select,
+    body.theme-black .field textarea {
+        background: linear-gradient(145deg, var(--glass-fill-strong), var(--glass-fill));
+        border-color: var(--surface-border-soft);
+    }
+
+}
+@media screen and (min-width: 1040px) {
+    .sidebar {
+        border-right: 1px solid var(--surface-border);
+        background:
+            radial-gradient(circle at top, rgba(125, 211, 252, 0.16), transparent 30%),
+            linear-gradient(180deg, rgba(10, 22, 48, 0.84), rgba(14, 35, 76, 0.68));
+        box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.08);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+    }
+
+    body.theme-black .sidebar {
+        background:
+            radial-gradient(circle at top, rgba(56, 189, 248, 0.12), transparent 30%),
+            linear-gradient(180deg, rgba(2, 6, 23, 0.88), rgba(8, 12, 20, 0.72));
+    }
+}
