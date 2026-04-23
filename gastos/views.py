@@ -4,8 +4,9 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from financeiro.utils import month_bounds
 from gastos.forms import GastoDebitoForm, GastoForm
-from gastos.models import Categoria, Gasto, GastoDebito
+from gastos.models import Categoria, Gasto, GastoDebito, Parcela
 from gastos.services import (
     create_debit_expense_for_profile,
     create_gasto_for_profile,
@@ -22,27 +23,65 @@ from perfis.decorators import active_profile_required
 from perfis.services import get_active_profile
 
 
-@active_profile_required
-def gastos_list(request):
-    profile = get_active_profile(request)
+def build_gastos_page_context(profile, *, today=None, credit_form=None, debit_form=None):
+    today = today or timezone.localdate()
+    month_start, month_end = month_bounds(today.year, today.month)
+
     gastos = get_gastos_for_profile(profile)
-    today = timezone.localdate()
+    credit_form = credit_form or GastoForm(profile=profile)
+    debit_form = debit_form or GastoDebitoForm(prefix="debit")
+
+    credit_month_entries = list(
+        Parcela.objects.select_related("gasto", "gasto__categoria")
+        .filter(gasto__perfil=profile, data_vencimento__range=(month_start, month_end))
+        .order_by("data_vencimento", "numero", "gasto__nome")
+    )
+    credit_total = sum((item.valor for item in credit_month_entries), start=Decimal("0.00"))
+
     debit_expenses = list(
-        profile.gastos_debito.filter(data__year=today.year, data__month=today.month)
+        profile.gastos_debito.filter(data__range=(month_start, month_end))
         .order_by("-data", "-criado_em")
     )
     debit_total = sum((item.valor for item in debit_expenses), start=Decimal("0.00"))
+
+    return {
+        "profile": profile,
+        "gastos": gastos,
+        "credit_form": credit_form,
+        "saved_expense_names": credit_form.saved_name_choices,
+        "credit_month_entries": credit_month_entries,
+        "credit_total": credit_total,
+        "credit_reference_date": today,
+        "credit_gastos_count": len({item.gasto_id for item in credit_month_entries}),
+        "debit_form": debit_form,
+        "debit_expenses": debit_expenses,
+        "debit_total": debit_total,
+        "debit_reference_date": today,
+    }
+
+
+@active_profile_required
+def gastos_list(request):
+    profile = get_active_profile(request)
+
+    if request.method == "POST":
+        form = GastoForm(request.POST, profile=profile)
+        if form.is_valid():
+            create_gasto_for_profile(profile, form.cleaned_data)
+            messages.success(request, "Gasto criado e parcelas geradas com sucesso.")
+            return redirect("gastos")
+
+        messages.error(request, "Nao foi possivel salvar o gasto no credito. Revise os campos.")
+        return render(
+            request,
+            "gastos/gastos.html",
+            build_gastos_page_context(profile, credit_form=form),
+        )
+
     return render(
         request,
         "gastos/gastos.html",
-        {
-            "profile": profile,
-            "gastos": gastos,
-            "debit_form": GastoDebitoForm(prefix="debit"),
-            "debit_expenses": debit_expenses,
-            "debit_total": debit_total,
-            "debit_reference_date": today,
-        },
+        build_gastos_page_context(profile),
     )
 
 

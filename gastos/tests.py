@@ -312,6 +312,54 @@ class FinanceFlowTests(TestCase):
         self.assertContains(response, 'data-expense-name-select')
         self.assertContains(response, '<option value="Carro">', html=True)
 
+    def test_gastos_page_shows_inline_credit_form_and_month_card(self):
+        self.login_and_select(self.samuel)
+
+        response = self.client.get(reverse("gastos"))
+
+        self.assertContains(response, 'id="credito-form"')
+        self.assertContains(response, "Credito do mes")
+        self.assertNotContains(response, "Cadastrar primeiro gasto")
+
+    def test_inline_credit_form_creates_gasto_from_gastos_page(self):
+        today = timezone.localdate().replace(day=1)
+        self.login_and_select(self.samuel)
+
+        response = self.client.post(
+            reverse("gastos"),
+            {
+                "nome": "Cartao Inline",
+                "valor_total": "240.00",
+                "quantidade_parcelas": "3",
+                "dia_vencimento": "20",
+                "categoria": self.alimentacao.id,
+                "data_inicio": today.isoformat(),
+            },
+        )
+
+        self.assertRedirects(response, reverse("gastos"))
+        self.assertTrue(Gasto.objects.filter(perfil=self.samuel, nome="Cartao Inline").exists())
+
+    def test_credit_month_card_lists_current_month_installments(self):
+        today = timezone.localdate().replace(day=1)
+        create_gasto_for_profile(
+            self.samuel,
+            {
+                "categoria": self.transporte,
+                "nome": "Cartao de teste",
+                "valor_total": Decimal("180.00"),
+                "quantidade_parcelas": 3,
+                "dia_vencimento": 20,
+                "data_inicio": today,
+            },
+        )
+
+        self.login_and_select(self.samuel)
+        response = self.client.get(reverse("gastos"))
+
+        self.assertContains(response, "Cartao de teste")
+        self.assertContains(response, "Parcela 1/3")
+
     def test_dashboard_groups_active_debts_by_name(self):
         today = timezone.localdate().replace(day=1)
         create_gasto_for_profile(
