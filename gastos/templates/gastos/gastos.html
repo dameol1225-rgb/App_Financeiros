@@ -4,28 +4,16 @@
 {% block page_title %}Gastos e dívidas{% endblock %}
 {% block eyebrow %}Controle de {{ profile.nome }}{% endblock %}
 
-{% block topbar_actions %}
-    <a href="{% url 'export_pdf' %}" class="ghost-button">Imprimir / PDF</a>
-    <a href="#credito-form" class="primary-button">Novo gasto</a>
-{% endblock %}
+{% block topbar_actions %}{% endblock %}
 
 {% block content %}
-    <section class="page-intro intro-banner" data-reveal>
-        <div>
-            <h3>Corrija, remova e acompanhe os gastos com mais controle</h3>
-            <p class="muted">Qualquer edição ou remoção aqui já fica salva no banco e refletida nas parcelas do gasto.</p>
-        </div>
-        <a href="#credito-form" class="primary-button">Adicionar gasto</a>
-    </section>
-
     <section class="split-grid">
         <article class="section-card" data-reveal id="credito-form">
             <div class="section-heading">
                 <div>
-                    <p class="eyebrow">Compra no credito</p>
-                    <h3>Formulario pronto para lancar</h3>
+                    <h3>Novo gasto no credito</h3>
+                    <p class="muted">Salve a compra e acompanhe o cartao abaixo.</p>
                 </div>
-                <span class="tag strong-tag">Ja entra no cartao</span>
             </div>
 
             <form method="post" action="{% url 'gastos' %}" class="stack-form">
@@ -72,20 +60,19 @@
                         </label>
                     {% endif %}
                 {% endfor %}
-                <button type="submit" class="primary-button">Salvar gasto no credito</button>
+                <button type="submit" class="primary-button">Salvar no credito</button>
             </form>
         </article>
 
         <article class="section-card" data-reveal>
             <div class="section-heading section-heading--stacked">
                 <div>
-                    <p class="eyebrow">Credito do mes</p>
-                    <h3>{{ credit_reference_date|date:"F \\d\\e Y" }}</h3>
+                    <h3>Credito do mes</h3>
+                    <p class="muted">{{ credit_reference_date|date:"F \\d\\e Y" }}</p>
                 </div>
                 <div class="section-meta">
                     <span class="tag">R$ {{ credit_total|floatformat:2 }}</span>
                     <span class="tag">{{ credit_month_entries|length }} lancamento(s)</span>
-                    <span class="tag">{{ credit_gastos_count }} compra(s)</span>
                 </div>
             </div>
 
@@ -109,7 +96,7 @@
                         </div>
                     </div>
                 {% empty %}
-                    <p class="muted">Nenhum lancamento no credito foi gerado neste mes ainda.</p>
+                    <p class="muted">Nenhum lancamento no credito neste mes.</p>
                 {% endfor %}
             </div>
         </article>
@@ -119,10 +106,9 @@
         <article class="section-card" data-reveal>
             <div class="section-heading">
                 <div>
-                    <p class="eyebrow">Compra no debito</p>
-                    <h3>Lancamento rapido do mes</h3>
+                    <h3>Novo gasto no debito</h3>
+                    <p class="muted">Entra no mes, sem virar vencimento.</p>
                 </div>
-                <span class="tag strong-tag">Nao entra em 5 / 20 / 30</span>
             </div>
 
             <form method="post" action="{% url 'add_debit_expense' %}" class="stack-form">
@@ -136,22 +122,15 @@
                         {% endif %}
                     </label>
                 {% endfor %}
-                <button type="submit" class="primary-button">Salvar compra no debito</button>
+                <button type="submit" class="primary-button">Salvar no debito</button>
             </form>
-
-            <div class="mini-list">
-                <div class="mini-list__item">
-                    <strong>Como funciona</strong>
-                    <p class="muted">Essa compra entra no total do mes e nos relatorios, mas nao cria parcela nem aparece nos cards de vencimento.</p>
-                </div>
-            </div>
         </article>
 
         <article class="section-card" data-reveal>
             <div class="section-heading section-heading--stacked">
                 <div>
-                    <p class="eyebrow">Debito do mes</p>
-                    <h3>{{ debit_reference_date|date:"F \\d\\e Y" }}</h3>
+                    <h3>Debito do mes</h3>
+                    <p class="muted">{{ debit_reference_date|date:"F \\d\\e Y" }}</p>
                 </div>
                 <div class="section-meta">
                     <span class="tag">R$ {{ debit_total|floatformat:2 }}</span>
@@ -178,7 +157,7 @@
                         </div>
                     </div>
                 {% empty %}
-                    <p class="muted">Nenhuma compra no debito registrada neste mes.</p>
+                    <p class="muted">Nenhuma compra no debito neste mes.</p>
                 {% endfor %}
             </div>
         </article>
@@ -255,8 +234,8 @@
             </article>
         {% empty %}
             <article class="section-card empty-state" data-reveal>
-                <h3>Nenhum card de credito ainda</h3>
-                <p class="muted">Assim que voce salvar um gasto no formulario acima, ele aparece aqui para acompanhamento.</p>
+                <h3>Nenhum gasto no credito</h3>
+                <p class="muted">Os cartoes salvos aparecem aqui.</p>
             </article>
         {% endfor %}
     </section>

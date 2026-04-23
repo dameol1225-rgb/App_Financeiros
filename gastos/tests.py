@@ -320,6 +320,12 @@ class FinanceFlowTests(TestCase):
         self.assertContains(response, 'id="credito-form"')
         self.assertContains(response, "Credito do mes")
         self.assertNotContains(response, "Cadastrar primeiro gasto")
+        self.assertNotContains(
+            response,
+            f'href="{reverse("export_pdf")}" class="ghost-button">Imprimir / PDF</a>',
+            html=False,
+        )
+        self.assertNotContains(response, "Corrija, remova e acompanhe os gastos com mais controle")
 
     def test_inline_credit_form_creates_gasto_from_gastos_page(self):
         today = timezone.localdate().replace(day=1)
