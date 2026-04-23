@@ -7,8 +7,8 @@
 {% block content %}
     <section class="page-intro" data-reveal>
         <div>
-            <h3>Selecione quem vai visualizar os dados agora</h3>
-            <p class="muted">O login e compartilhado, mas os registros continuam separados por perfil.</p>
+            <h3>Escolha o perfil para entrar</h3>
+            <p class="muted">Cada perfil abre com o tema e a foto que foram salvos anteriormente.</p>
         </div>
     </section>
 
@@ -18,18 +18,14 @@
                 {% csrf_token %}
                 <input type="hidden" name="profile_slug" value="{{ profile.slug }}">
                 <div class="profile-card__header">
-                    <span class="profile-badge">{{ profile.nome|slice:":1" }}</span>
+                    {% if profile.tem_foto_perfil %}
+                        <img src="{{ profile.foto_perfil }}" alt="Foto de {{ profile.nome }}" class="profile-avatar">
+                    {% else %}
+                        <span class="profile-badge">{{ profile.iniciais }}</span>
+                    {% endif %}
                     <div>
                         <h3>{{ profile.nome }}</h3>
                         <p class="muted">Perfil {{ forloop.counter }}</p>
-                    </div>
-                </div>
-                <div class="profile-card__body">
-                    <p class="muted">Recebimentos fixos previstos</p>
-                    <div class="tag-row">
-                        {% for salario in profile.parcelas_salariais.all %}
-                            <span class="tag">Dia {{ salario.dia_recebimento }}</span>
-                        {% endfor %}
                     </div>
                 </div>
                 <button type="submit" class="primary-button">Abrir perfil</button>

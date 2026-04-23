@@ -5,92 +5,13 @@
 {% block eyebrow %}Resumo de {{ profile.nome }}{% endblock %}
 
 {% block topbar_actions %}
-    <a href="{% url 'historico' %}" class="ghost-button">Historico</a>
-    <a href="{% url 'export_pdf' %}" class="primary-button">Imprimir / PDF</a>
-{% endblock %}
-
-{% block content %}
-    <section class="hero-layout hero-layout--clean">
-        <article class="hero-panel month-panel" data-reveal>
-            <div class="hero-panel__header">
-                <div>
-                    <p class="eyebrow">Fechamento do mes</p>
-                    <h3>{{ reference_date|date:"F \\d\\e Y" }}</h3>
-                </div>
-                <span class="status-chip {{ month_status.tone }}">{{ month_status.label }}</span>
-            </div>
-
-            <div class="hero-panel__main hero-panel__main--compact">
-                <div>
-                    <p class="hero-kicker">Saldo previsto</p>
-                    <strong>R$ {{ projected_balance|floatformat:2 }}</strong>
-                    <p class="muted">{{ month_status.message }}</p>
-                </div>
-
-                <div class="hero-stat-stack hero-stat-stack--compact">
-                    <div class="stat-tile">
-                        <span>Receita do mes</span>
-                        <strong>R$ {{ total_income|floatformat:2 }}</strong>
-                    </div>
-                    <div class="stat-tile">
-                        <span>Folga</span>
-                        <strong>{{ available_ratio|floatformat:2 }}%</strong>
-                    </div>
-                </div>
-            </div>
-
-            <div class="meter-block">
-                <div class="meter-block__header">
-                    <span>Receita comprometida</span>
-                    <strong>{{ income_commitment_percentage|floatformat:2 }}%</strong>
-                </div>
-                <div class="progress-track large">
-                    <div class="progress-fill success-fill" style="width: {% if income_commitment_percentage > 100 %}100{% else %}{{ income_commitment_percentage|floatformat:0 }}{% endif %}%"></div>
-                </div>
-                <div class="meter-caption">
-                    <span>Fixas: R$ {{ salary_total|floatformat:2 }}</span>
-                    <span>Extra: R$ {{ extra_total|floatformat:2 }}</span>
-                </div>
-            </div>
-        </article>
-
-        <div class="summary-grid compact summary-grid--tight">
-            <article class="metric-card tone-blue" data-reveal>
-                <p>Entradas fixas</p>
-                <strong>R$ {{ salary_total|floatformat:2 }}</strong>
-                <span>Base mensal</span>
-            </article>
-            <article class="metric-card tone-cyan" data-reveal>
-                <p>Renda extra</p>
-                <strong>R$ {{ extra_total|floatformat:2 }}</strong>
-                <span>No periodo atual</span>
-            </article>
-            <article class="metric-card tone-slate" data-reveal>
-                <p>Saidas</p>
-                <strong>R$ {{ expense_total|floatformat:2 }}</strong>
-                <span>Parcelas do mes</span>
-            </article>
-            <article class="metric-card tone-green" data-reveal>
-                <p>Saldo</p>
-                <strong>R$ {{ projected_balance|floatformat:2 }}</strong>
-                <span>Fechamento estimado</span>
-            </article>
-        </div>
-    </section>
-
-    <section class="section-card section-card--dense section-card--expanded" data-reveal>
-            <div class="section-heading section-heading--stacked">
-                <div>
-                    <p class="eyebrow">Proximos vencimentos</p>
-                    <h3>{{ due_reference_start|date:"F \\d\\e Y" }}</h3>
-                </div>
-                <div class="section-meta">
-                    <span class="tag">{{ due_installments_count }} parcela(s)</span>
-                    <span class="tag">R$ {{ due_installments_total|floatformat:2 }}</span>
-                </div>
-            </div>
-
-            <form method="get" class="due-filter-grid">
+    <details class="filter-menu" data-overlay-menu>
+        <summary class="ghost-button filter-toggle">
+            <i data-lucide="sliders-horizontal"></i>
+            <span>Filtrar vencimentos</span>
+        </summary>
+        <div class="filter-menu__panel">
+            <form method="get" class="filter-menu__form">
                 <label class="field field--compact">
                     <span>Mes</span>
                     <select name="due_mes">
@@ -128,8 +49,92 @@
                     </select>
                 </label>
 
-                <button type="submit" class="primary-button">Aplicar</button>
+                <div class="filter-menu__actions">
+                    <button type="submit" class="primary-button">Aplicar</button>
+                    <a href="{% url 'dashboard' %}" class="ghost-button">Limpar</a>
+                </div>
             </form>
+        </div>
+    </details>
+{% endblock %}
+
+{% block content %}
+    <section class="hero-layout hero-layout--clean">
+        <article class="hero-panel month-panel" data-reveal>
+            <div class="hero-panel__header">
+                <div>
+                    <p class="eyebrow">Fechamento do mes</p>
+                    <h3>{{ reference_date|date:"F \\d\\e Y" }}</h3>
+                </div>
+                <span class="status-chip {{ month_status.tone }}">{{ month_status.label }}</span>
+            </div>
+
+            <div class="hero-panel__main hero-panel__main--compact">
+                <div>
+                    <p class="hero-kicker">Saldo previsto</p>
+                    <strong>R$ {{ projected_balance|floatformat:2 }}</strong>
+                    <p class="muted">{{ month_status.message }}</p>
+                </div>
+
+                <div class="hero-stat-stack hero-stat-stack--compact hero-stat-stack--single">
+                    <div class="stat-tile">
+                        <span>Receita do mes</span>
+                        <strong>R$ {{ total_income|floatformat:2 }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meter-block">
+                <div class="meter-block__header">
+                    <span>Receita comprometida</span>
+                    <strong>{{ income_commitment_percentage|floatformat:2 }}%</strong>
+                </div>
+                <div class="progress-track large">
+                    <div class="progress-fill success-fill" style="width: {% if income_commitment_percentage > 100 %}100{% else %}{{ income_commitment_percentage|floatformat:0 }}{% endif %}%"></div>
+                </div>
+                <div class="meter-caption">
+                    <span>Fixas: R$ {{ salary_total|floatformat:2 }}</span>
+                    <span>Extra: R$ {{ extra_total|floatformat:2 }}</span>
+                </div>
+            </div>
+        </article>
+
+        <div class="summary-grid compact summary-grid--tight summary-grid--triple">
+            <article class="metric-card tone-blue" data-reveal>
+                <p>Entradas fixas</p>
+                <strong>R$ {{ salary_total|floatformat:2 }}</strong>
+                <span>Base mensal</span>
+            </article>
+            <article class="metric-card tone-cyan" data-reveal>
+                <p>Renda extra</p>
+                <strong>R$ {{ extra_total|floatformat:2 }}</strong>
+                <span>No periodo atual</span>
+            </article>
+            <article class="metric-card tone-slate" data-reveal>
+                <p>Saidas</p>
+                <strong>R$ {{ expense_total|floatformat:2 }}</strong>
+                <span>Parcelas do mes</span>
+            </article>
+        </div>
+    </section>
+
+    <section class="section-card section-card--dense section-card--expanded" data-reveal>
+            <div class="section-heading section-heading--stacked">
+                <div>
+                    <p class="eyebrow">Proximos vencimentos</p>
+                    <h3>{{ due_reference_start|date:"F \\d\\e Y" }}</h3>
+                </div>
+                <div class="section-meta">
+                    <span class="tag">{{ due_installments_count }} parcela(s)</span>
+                    <span class="tag">R$ {{ due_installments_total|floatformat:2 }}</span>
+                    {% if selected_due_category %}
+                        <span class="tag">Categoria filtrada</span>
+                    {% endif %}
+                    {% if selected_due_status != "pendente" %}
+                        <span class="tag">Status: {{ selected_due_status }}</span>
+                    {% endif %}
+                </div>
+            </div>
 
             <div class="due-summary-grid due-summary-grid--compact">
                 {% for bucket in due_buckets %}
@@ -162,121 +167,123 @@
             </div>
     </section>
 
-    <section class="split-grid forms-grid">
-        <article class="section-card" data-reveal>
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">Configuracao</p>
-                    <h3>Recebimentos fixos</h3>
-                </div>
-            </div>
-            <form method="post" action="{% url 'update_salary' %}" class="stack-form">
-                {% csrf_token %}
-                {% for field in salary_form %}
-                    <label class="field">
-                        <span>{{ field.label }}</span>
-                        {{ field }}
-                        {% if field.errors %}
-                            <small class="field-errors">{{ field.errors|striptags }}</small>
-                        {% endif %}
-                    </label>
-                {% endfor %}
-                <button type="submit" class="primary-button">Salvar recebimentos</button>
-            </form>
-        </article>
-
-        <article class="section-card" data-reveal>
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">Entrada manual</p>
-                    <h3>Adicionar renda extra</h3>
-                </div>
-            </div>
-            <form method="post" action="{% url 'add_extra_income' %}" class="stack-form">
-                {% csrf_token %}
-                {% for field in extra_form %}
-                    <label class="field">
-                        <span>{{ field.label }}</span>
-                        {{ field }}
-                        {% if field.errors %}
-                            <small class="field-errors">{{ field.errors|striptags }}</small>
-                        {% endif %}
-                    </label>
-                {% endfor %}
-                <button type="submit" class="primary-button">Salvar renda extra</button>
-            </form>
-
-            <div class="mini-list compact-list">
-                <div class="section-heading compact">
-                    <h4>Ultimos lancamentos</h4>
-                </div>
-                {% for item in extra_income %}
-                    <div class="mini-list__item">
-                        <div>
-                            <strong>{{ item.descricao }}</strong>
-                            <p class="muted">{{ item.data|date:"d/m/Y" }}</p>
-                        </div>
-                        <span>R$ {{ item.valor|floatformat:2 }}</span>
+    {% if profile.mostrar_funcoes_extras %}
+        <section class="split-grid forms-grid">
+            <article class="section-card" data-reveal>
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Configuracao</p>
+                        <h3>Recebimentos fixos</h3>
                     </div>
+                </div>
+                <form method="post" action="{% url 'update_salary' %}" class="stack-form">
+                    {% csrf_token %}
+                    {% for field in salary_form %}
+                        <label class="field">
+                            <span>{{ field.label }}</span>
+                            {{ field }}
+                            {% if field.errors %}
+                                <small class="field-errors">{{ field.errors|striptags }}</small>
+                            {% endif %}
+                        </label>
+                    {% endfor %}
+                    <button type="submit" class="primary-button">Salvar recebimentos</button>
+                </form>
+            </article>
+
+            <article class="section-card" data-reveal>
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">Entrada manual</p>
+                        <h3>Adicionar renda extra</h3>
+                    </div>
+                </div>
+                <form method="post" action="{% url 'add_extra_income' %}" class="stack-form">
+                    {% csrf_token %}
+                    {% for field in extra_form %}
+                        <label class="field">
+                            <span>{{ field.label }}</span>
+                            {{ field }}
+                            {% if field.errors %}
+                                <small class="field-errors">{{ field.errors|striptags }}</small>
+                            {% endif %}
+                        </label>
+                    {% endfor %}
+                    <button type="submit" class="primary-button">Salvar renda extra</button>
+                </form>
+
+                <div class="mini-list compact-list">
+                    <div class="section-heading compact">
+                        <h4>Ultimos lancamentos</h4>
+                    </div>
+                    {% for item in extra_income %}
+                        <div class="mini-list__item">
+                            <div>
+                                <strong>{{ item.descricao }}</strong>
+                                <p class="muted">{{ item.data|date:"d/m/Y" }}</p>
+                            </div>
+                            <span>R$ {{ item.valor|floatformat:2 }}</span>
+                        </div>
+                    {% empty %}
+                        <p class="muted">Nenhuma renda extra registrada neste mes.</p>
+                    {% endfor %}
+                </div>
+            </article>
+        </section>
+
+        <section class="section-card" data-reveal>
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Dividas ativas</p>
+                    <h3>Parcelas restantes</h3>
+                </div>
+                <a href="{% url 'gastos' %}" class="ghost-button">Ver todos</a>
+            </div>
+
+            <div class="expense-grid">
+                {% for item in debt_cards %}
+                    <article class="expense-card clean expense-card--soft">
+                        <div class="expense-card__top">
+                            <div>
+                                <h4>{{ item.gasto.nome }}</h4>
+                                <p class="muted">{{ item.gasto.categoria.nome }}</p>
+                            </div>
+                            <span class="status-pill {% if item.gasto.status == 'quitado' %}done{% endif %}">{{ item.gasto.get_status_display }}</span>
+                        </div>
+
+                        <div class="expense-progress">
+                            <div class="progress-track slim">
+                                <div class="progress-fill" style="width: {{ item.progress_percentage|floatformat:0 }}%"></div>
+                            </div>
+                            <div class="expense-progress__meta">
+                                <span>{{ item.paid_count }}/{{ item.total_count }} pagas</span>
+                                <span>{{ item.progress_percentage|floatformat:0 }}%</span>
+                            </div>
+                        </div>
+
+                        <div class="expense-card__stats">
+                            <div class="stat-pair">
+                                <span>Restantes</span>
+                                <strong>{{ item.remaining_count }}</strong>
+                            </div>
+                            <div class="stat-pair">
+                                <span>Parcela</span>
+                                <strong>R$ {{ item.monthly_value|floatformat:2 }}</strong>
+                            </div>
+                            <div class="stat-pair">
+                                <span>Em aberto</span>
+                                <strong>R$ {{ item.remaining_total|floatformat:2 }}</strong>
+                            </div>
+                        </div>
+
+                        {% if item.next_due_date %}
+                            <p class="muted">Proximo vencimento em {{ item.next_due_date|date:"d/m/Y" }}</p>
+                        {% endif %}
+                    </article>
                 {% empty %}
-                    <p class="muted">Nenhuma renda extra registrada neste mes.</p>
+                    <p class="muted">Nenhum gasto ativo no momento.</p>
                 {% endfor %}
             </div>
-        </article>
-    </section>
-
-    <section class="section-card" data-reveal>
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">Dividas ativas</p>
-                <h3>Parcelas restantes</h3>
-            </div>
-            <a href="{% url 'gastos' %}" class="ghost-button">Ver todos</a>
-        </div>
-
-        <div class="expense-grid">
-            {% for item in debt_cards %}
-                <article class="expense-card clean expense-card--soft">
-                    <div class="expense-card__top">
-                        <div>
-                            <h4>{{ item.gasto.nome }}</h4>
-                            <p class="muted">{{ item.gasto.categoria.nome }}</p>
-                        </div>
-                        <span class="status-pill {% if item.gasto.status == 'quitado' %}done{% endif %}">{{ item.gasto.get_status_display }}</span>
-                    </div>
-
-                    <div class="expense-progress">
-                        <div class="progress-track slim">
-                            <div class="progress-fill" style="width: {{ item.progress_percentage|floatformat:0 }}%"></div>
-                        </div>
-                        <div class="expense-progress__meta">
-                            <span>{{ item.paid_count }}/{{ item.total_count }} pagas</span>
-                            <span>{{ item.progress_percentage|floatformat:0 }}%</span>
-                        </div>
-                    </div>
-
-                    <div class="expense-card__stats">
-                        <div class="stat-pair">
-                            <span>Restantes</span>
-                            <strong>{{ item.remaining_count }}</strong>
-                        </div>
-                        <div class="stat-pair">
-                            <span>Parcela</span>
-                            <strong>R$ {{ item.monthly_value|floatformat:2 }}</strong>
-                        </div>
-                        <div class="stat-pair">
-                            <span>Em aberto</span>
-                            <strong>R$ {{ item.remaining_total|floatformat:2 }}</strong>
-                        </div>
-                    </div>
-
-                    {% if item.next_due_date %}
-                        <p class="muted">Proximo vencimento em {{ item.next_due_date|date:"d/m/Y" }}</p>
-                    {% endif %}
-                </article>
-            {% empty %}
-                <p class="muted">Nenhum gasto ativo no momento.</p>
-            {% endfor %}
-        </div>
-    </section>
+        </section>
+    {% endif %}
 {% endblock %}

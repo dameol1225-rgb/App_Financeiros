@@ -1,9 +1,13 @@
+from io import BytesIO
+
 from datetime import timedelta
 
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from PIL import Image
 
 from gastos.models import Categoria
 from gastos.services import create_gasto_for_profile
@@ -100,3 +104,50 @@ class AuthAndProfileFlowTests(TestCase):
         response = self.client.get(reverse("dashboard"))
 
         self.assertContains(response, "theme-black")
+
+    def test_extra_sections_visibility_is_persisted_per_profile(self):
+        self.login()
+        self.select_profile(self.samuel)
+
+        self.client.post(
+            reverse("toggle_extra_sections"),
+            {
+                "mostrar_funcoes_extras": "0",
+                "next": reverse("dashboard"),
+            },
+        )
+
+        self.samuel.refresh_from_db()
+        self.assertFalse(self.samuel.mostrar_funcoes_extras)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertNotContains(response, "Recebimentos fixos")
+        self.assertNotContains(response, "Adicionar renda extra")
+
+    def test_profile_image_is_saved_in_database(self):
+        self.login()
+        self.select_profile(self.samuel)
+
+        image_stream = BytesIO()
+        Image.new("RGB", (64, 64), "#2563eb").save(image_stream, format="PNG")
+        image_stream.seek(0)
+
+        response = self.client.post(
+            reverse("update_profile_image"),
+            {
+                "next": reverse("dashboard"),
+                "image": SimpleUploadedFile(
+                    "avatar.png",
+                    image_stream.getvalue(),
+                    content_type="image/png",
+                ),
+            },
+        )
+
+        self.assertRedirects(response, reverse("dashboard"))
+        self.samuel.refresh_from_db()
+        self.assertTrue(self.samuel.foto_perfil.startswith("data:image/webp;base64,"))
+
+        profile_page = self.client.get(reverse("select_profile"))
+        self.assertContains(profile_page, "data:image/webp;base64,")

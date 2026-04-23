@@ -9,7 +9,6 @@ class LoginForm(AuthenticationForm):
         label="Login",
         widget=forms.TextInput(
             attrs={
-                "placeholder": "Casalorganizado",
                 "autocomplete": "username",
             }
         ),
@@ -19,11 +18,20 @@ class LoginForm(AuthenticationForm):
         strip=False,
         widget=forms.PasswordInput(
             attrs={
-                "placeholder": "413724Financas",
                 "autocomplete": "current-password",
             }
         ),
     )
+
+
+class ProfileImageForm(forms.Form):
+    image = forms.ImageField(label="Imagem de perfil")
+
+    def clean_image(self):
+        image = self.cleaned_data["image"]
+        if image.size > 5 * 1024 * 1024:
+            raise forms.ValidationError("A imagem precisa ter no maximo 5 MB.")
+        return image
 
 
 class SalaryUpdateForm(forms.Form):

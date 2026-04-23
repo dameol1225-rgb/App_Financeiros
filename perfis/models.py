@@ -11,12 +11,23 @@ class Perfil(models.Model):
     slug = models.SlugField(unique=True)
     ordem = models.PositiveSmallIntegerField(default=0)
     tema = models.CharField(max_length=20, choices=THEME_CHOICES, default=DEFAULT_THEME)
+    mostrar_funcoes_extras = models.BooleanField(default=True)
+    foto_perfil = models.TextField(blank=True, default="")
 
     class Meta:
         ordering = ("ordem", "nome")
 
     def __str__(self):
         return self.nome
+
+    @property
+    def iniciais(self):
+        partes = [parte[0].upper() for parte in self.nome.split() if parte]
+        return "".join(partes[:2]) or self.nome[:1].upper()
+
+    @property
+    def tem_foto_perfil(self):
+        return bool(self.foto_perfil)
 
     @property
     def salario_total_mensal(self):

@@ -75,6 +75,23 @@
         "Nenhum dado suficiente para montar o grafico neste periodo."
     );
 
+    const overlayMenus = document.querySelectorAll("[data-overlay-menu]");
+    if (overlayMenus.length) {
+        document.addEventListener("click", (event) => {
+            overlayMenus.forEach((menu) => {
+                if (!menu.contains(event.target)) {
+                    menu.removeAttribute("open");
+                }
+            });
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                overlayMenus.forEach((menu) => menu.removeAttribute("open"));
+            }
+        });
+    }
+
     document.querySelectorAll("[data-print-trigger]").forEach((button) => {
         button.addEventListener("click", () => {
             window.print();

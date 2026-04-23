@@ -40,6 +40,24 @@ def set_profile_theme(profile, theme):
     return profile
 
 
+def set_profile_extra_sections_visibility(profile, show_extra_sections):
+    profile.mostrar_funcoes_extras = show_extra_sections
+    profile.save(update_fields=["mostrar_funcoes_extras"])
+    return profile
+
+
+def set_profile_image(profile, image_data):
+    profile.foto_perfil = image_data
+    profile.save(update_fields=["foto_perfil"])
+    return profile
+
+
+def clear_profile_image(profile):
+    profile.foto_perfil = ""
+    profile.save(update_fields=["foto_perfil"])
+    return profile
+
+
 def get_profile_history_anchor(profile):
     gasto_anchor = profile.gastos.order_by("data_inicio").values_list("data_inicio", flat=True).first()
     extra_anchor = profile.rendas_extras.order_by("data").values_list("data", flat=True).first()

@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'icone moeda.png' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
@@ -17,21 +18,10 @@
     {% if request.user.is_authenticated %}
         <div class="app-shell">
             <aside class="sidebar">
-                <div class="brand-card" data-reveal>
+                <div class="sidebar-header" data-reveal>
                     <p class="eyebrow">Painel financeiro</p>
-                    <h1>{{ app_name }}</h1>
-                    <p class="muted">Receitas, dividas e fechamento do mes em uma leitura bem mais clara.</p>
+                    <strong>{{ app_name }}</strong>
                 </div>
-
-                {% if active_profile %}
-                    <div class="sidebar-profile" data-reveal>
-                        <span class="profile-badge">{{ active_profile.nome|slice:":1" }}</span>
-                        <div>
-                            <p class="muted">Perfil ativo</p>
-                            <strong>{{ active_profile.nome }}</strong>
-                        </div>
-                    </div>
-                {% endif %}
 
                 <nav class="sidebar-nav" data-reveal>
                     {% with current=request.resolver_match.url_name %}
@@ -73,33 +63,119 @@
                     </div>
                     <div class="topbar-controls">
                         {% if active_profile %}
-                            <form method="post" action="{% url 'update_theme' %}" class="theme-switcher">
-                                {% csrf_token %}
-                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                {% for value, label in theme_options %}
-                                    <button
-                                        type="submit"
-                                        name="theme"
-                                        value="{{ value }}"
-                                        class="theme-option {% if active_theme == value %}is-active{% endif %}"
-                                    >
-                                        {{ label }}
-                                    </button>
-                                {% endfor %}
-                            </form>
+                            <details class="preference-menu" data-overlay-menu>
+                                <summary class="icon-button" aria-label="Abrir preferencias do perfil">
+                                    <i data-lucide="sun-moon"></i>
+                                </summary>
+                                <div class="preference-menu__panel">
+                                    <div class="preference-menu__section">
+                                        <p class="preference-menu__label">Perfil</p>
+                                        <div class="preference-profile">
+                                            {% if active_profile.tem_foto_perfil %}
+                                                <img src="{{ active_profile.foto_perfil }}" alt="Foto de {{ active_profile.nome }}" class="profile-avatar profile-avatar--small">
+                                            {% else %}
+                                                <span class="profile-badge profile-badge--small">{{ active_profile.iniciais }}</span>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ active_profile.nome }}</strong>
+                                                <p class="muted">Foto, tema e atalhos deste perfil.</p>
+                                            </div>
+                                        </div>
+
+                                        <form method="post" action="{% url 'update_profile_image' %}" enctype="multipart/form-data" class="preference-upload-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <label class="upload-trigger">
+                                                <i data-lucide="image-plus"></i>
+                                                <span>Escolher imagem</span>
+                                                <input type="file" name="image" accept="image/png,image/jpeg,image/webp">
+                                            </label>
+                                            <button type="submit" class="preference-option">Salvar foto</button>
+                                        </form>
+
+                                        {% if active_profile.tem_foto_perfil %}
+                                            <form method="post" action="{% url 'remove_profile_image' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                                <button type="submit" class="preference-option preference-option--secondary">Remover foto</button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="preference-menu__section">
+                                        <p class="preference-menu__label">Tema</p>
+                                        <div class="preference-menu__options">
+                                            {% for value, label in theme_options %}
+                                                <form method="post" action="{% url 'update_theme' %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                                    <button
+                                                        type="submit"
+                                                        name="theme"
+                                                        value="{{ value }}"
+                                                        class="preference-option {% if active_theme == value %}is-active{% endif %}"
+                                                    >
+                                                        {{ label }}
+                                                    </button>
+                                                </form>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+                                    <div class="preference-menu__section">
+                                        <p class="preference-menu__label">Visual</p>
+                                        <form method="post" action="{% url 'toggle_extra_sections' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <input type="hidden" name="mostrar_funcoes_extras" value="{% if active_profile.mostrar_funcoes_extras %}0{% else %}1{% endif %}">
+                                            <button type="submit" class="preference-option preference-option--secondary">
+                                                {% if active_profile.mostrar_funcoes_extras %}
+                                                    Ocultar funcoes extras
+                                                {% else %}
+                                                    Mostrar funcoes extras
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <div class="preference-menu__section">
+                                        <p class="preference-menu__label">Conta</p>
+                                        <div class="preference-menu__options">
+                                            <a href="{% url 'select_profile' %}" class="preference-option preference-option--link">Trocar perfil</a>
+                                            <a href="{% url 'logout' %}" class="preference-option preference-option--secondary preference-option--link">Sair</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
                         {% endif %}
 
                         <div class="topbar-actions">
-                            {% block topbar_actions %}
-                                {% if active_profile %}
-                                    <a href="{% url 'export_pdf' %}" class="ghost-button">Imprimir / PDF</a>
-                                    <a href="{% url 'select_profile' %}" class="ghost-button">Trocar perfil</a>
-                                {% endif %}
-                                <a href="{% url 'logout' %}" class="ghost-button">Sair</a>
-                            {% endblock %}
+                            {% block topbar_actions %}{% endblock %}
                         </div>
                     </div>
                 </header>
+
+                {% if active_profile %}
+                    <section class="mobile-overview" data-reveal>
+                        <article class="mobile-overview__card mobile-overview__card--brand">
+                            <p class="eyebrow">Painel financeiro</p>
+                            <h3>{{ app_name }}</h3>
+                            <p class="muted">Leitura rapida do mes, gastos e fechamento.</p>
+                        </article>
+
+                        <article class="mobile-overview__card mobile-overview__card--profile">
+                            {% if active_profile.tem_foto_perfil %}
+                                <img src="{{ active_profile.foto_perfil }}" alt="Foto de {{ active_profile.nome }}" class="profile-avatar">
+                            {% else %}
+                                <span class="profile-badge">{{ active_profile.iniciais }}</span>
+                            {% endif %}
+                            <div>
+                                <p class="eyebrow">Perfil ativo</p>
+                                <strong>{{ active_profile.nome }}</strong>
+                            </div>
+                        </article>
+                    </section>
+                {% endif %}
 
                 <main class="page-content">
                     {% if cleanup_notice %}

@@ -4,24 +4,13 @@
 {% block body_class %}login-page{% endblock %}
 
 {% block auth_content %}
-    <section class="auth-card" data-reveal>
-        <div class="hero-panel">
-            <p class="eyebrow">Bem-vindos</p>
-            <h1>Casal Organizado</h1>
-            <p class="muted">
-                Acompanhem entradas, parcelas, renda extra e o saldo projetado do casal em um unico app.
-            </p>
-            <div class="hero-pills">
-                <span class="tag">Django</span>
-                <span class="tag">Mobile first</span>
-                <span class="tag">Historico anual</span>
-            </div>
-        </div>
-
+    <section class="auth-card auth-card--single" data-reveal>
         <div class="panel-card">
             <div class="section-heading">
-                <p class="eyebrow">Login compartilhado</p>
-                <h2>Entrar no aplicativo</h2>
+                <div>
+                    <p class="eyebrow">Acesso</p>
+                    <h2>Entrar no aplicativo</h2>
+                </div>
             </div>
 
             <form method="post" class="stack-form">
