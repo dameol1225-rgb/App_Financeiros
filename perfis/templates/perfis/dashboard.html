@@ -73,7 +73,6 @@
                 <div>
                     <p class="hero-kicker">Saldo previsto</p>
                     <strong>R$ {{ projected_balance|floatformat:2 }}</strong>
-                    <p class="muted">{{ month_status.message }}</p>
                 </div>
 
                 <div class="hero-stat-stack hero-stat-stack--compact hero-stat-stack--single">
@@ -200,7 +199,17 @@
                             <strong>{{ item.descricao }}</strong>
                             <p class="muted">{{ item.data|date:"d/m/Y" }}</p>
                         </div>
-                        <span>R$ {{ item.valor|floatformat:2 }}</span>
+                        <div class="mini-list__aside">
+                            <span>R$ {{ item.valor|floatformat:2 }}</span>
+                            <div class="card-link-row card-link-row--compact">
+                                <a href="{% url 'edit_extra_income' item.id %}" class="text-action">Editar</a>
+                                <form method="post" action="{% url 'delete_extra_income' item.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{% url 'dashboard' %}">
+                                    <button type="submit" class="text-action text-action--danger">Excluir</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 {% empty %}
                     <p class="muted">Nenhuma renda extra registrada neste mes.</p>

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Editar renda extra | {{ app_name }}{% endblock %}
+{% block page_title %}Editar renda extra{% endblock %}
+{% block eyebrow %}Ajuste salvo no banco{% endblock %}
+
+{% block topbar_actions %}
+    <a href="{% url 'dashboard' %}" class="ghost-button">Voltar</a>
+{% endblock %}
+
+{% block content %}
+    <section class="form-layout">
+        <article class="section-card" data-reveal>
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Perfil atual</p>
+                    <h3>{{ profile.nome }}</h3>
+                </div>
+                <span class="tag strong-tag">Editando</span>
+            </div>
+
+            <form method="post" class="stack-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'dashboard' %}">
+                {% for field in form %}
+                    <label class="field">
+                        <span>{{ field.label }}</span>
+                        {{ field }}
+                        {% if field.errors %}
+                            <small class="field-errors">{{ field.errors|striptags }}</small>
+                        {% endif %}
+                    </label>
+                {% endfor %}
+                <button type="submit" class="primary-button">Salvar alteracoes</button>
+            </form>
+        </article>
+
+        <aside class="section-card accent-card" data-reveal>
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">O que muda</p>
+                    <h3>Edicao com persistencia</h3>
+                </div>
+            </div>
+            <div class="mini-list">
+                <div class="mini-list__item">
+                    <strong>1.</strong>
+                    <p class="muted">Descricao, valor e data ficam salvos direto no banco ao confirmar.</p>
+                </div>
+                <div class="mini-list__item">
+                    <strong>2.</strong>
+                    <p class="muted">A soma do mes e os cards do dashboard atualizam com base na edicao.</p>
+                </div>
+            </div>
+        </aside>
+    </section>
+{% endblock %}

@@ -14,7 +14,7 @@ from gastos.models import Categoria
 from gastos.services import get_dashboard_data
 from perfis.decorators import active_profile_required
 from perfis.forms import LoginForm, ProfileImageForm, RendaExtraForm, SalaryUpdateForm
-from perfis.models import Perfil
+from perfis.models import Perfil, RendaExtra
 from perfis.services import (
     clear_profile_image,
     clear_active_profile,
@@ -129,6 +129,42 @@ def add_extra_income(request):
     else:
         messages.error(request, "Nao foi possivel salvar a renda extra.")
     return redirect(redirect_to)
+
+
+@active_profile_required
+def edit_extra_income(request, extra_income_id):
+    profile = get_active_profile(request)
+    extra_income = get_object_or_404(RendaExtra, pk=extra_income_id, perfil=profile)
+
+    form = RendaExtraForm(request.POST or None, instance=extra_income)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Renda extra atualizada.")
+            return redirect(get_safe_redirect(request, fallback=reverse("dashboard")))
+        messages.error(request, "Nao foi possivel salvar as alteracoes da renda extra.")
+
+    return render(
+        request,
+        "perfis/edit_extra_income.html",
+        {
+            "profile": profile,
+            "form": form,
+            "extra_income": extra_income,
+        },
+    )
+
+
+@active_profile_required
+def delete_extra_income(request, extra_income_id):
+    if request.method != "POST":
+        return redirect("dashboard")
+
+    profile = get_active_profile(request)
+    extra_income = get_object_or_404(RendaExtra, pk=extra_income_id, perfil=profile)
+    extra_income.delete()
+    messages.success(request, "Renda extra removida.")
+    return redirect(get_safe_redirect(request, fallback=reverse("dashboard")))
 
 
 @active_profile_required

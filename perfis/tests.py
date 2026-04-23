@@ -11,7 +11,7 @@ from PIL import Image
 
 from gastos.models import Categoria
 from gastos.services import create_gasto_for_profile
-from perfis.models import Perfil
+from perfis.models import Perfil, RendaExtra
 from perfis.services import ensure_default_setup
 
 
@@ -162,3 +162,46 @@ class AuthAndProfileFlowTests(TestCase):
         self.assertNotContains(dashboard_response, "Recebimentos fixos")
         self.assertContains(settings_response, "Recebimentos fixos")
         self.assertContains(settings_response, "Tema e visual")
+
+    def test_extra_income_can_be_edited_and_persisted(self):
+        self.login()
+        self.select_profile(self.samuel)
+        renda = RendaExtra.objects.create(
+            perfil=self.samuel,
+            descricao="Freelancer antigo",
+            valor="120.00",
+            data=timezone.localdate(),
+        )
+
+        response = self.client.post(
+            reverse("edit_extra_income", args=[renda.id]),
+            {
+                "descricao": "Freelancer atualizado",
+                "valor": "180.00",
+                "data": timezone.localdate().isoformat(),
+                "next": reverse("dashboard"),
+            },
+        )
+
+        self.assertRedirects(response, reverse("dashboard"))
+        renda.refresh_from_db()
+        self.assertEqual(renda.descricao, "Freelancer atualizado")
+        self.assertEqual(str(renda.valor), "180.00")
+
+    def test_extra_income_can_be_removed_from_database(self):
+        self.login()
+        self.select_profile(self.samuel)
+        renda = RendaExtra.objects.create(
+            perfil=self.samuel,
+            descricao="Freelancer temporario",
+            valor="90.00",
+            data=timezone.localdate(),
+        )
+
+        response = self.client.post(
+            reverse("delete_extra_income", args=[renda.id]),
+            {"next": reverse("dashboard")},
+        )
+
+        self.assertRedirects(response, reverse("dashboard"))
+        self.assertFalse(RendaExtra.objects.filter(id=renda.id).exists())

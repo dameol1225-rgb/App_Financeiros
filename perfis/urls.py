@@ -14,5 +14,7 @@ urlpatterns = [
     path("preferencias/foto/remover/", views.remove_profile_image, name="remove_profile_image"),
     path("dashboard/salarios/", views.update_salary, name="update_salary"),
     path("dashboard/renda-extra/", views.add_extra_income, name="add_extra_income"),
+    path("dashboard/renda-extra/<int:extra_income_id>/editar/", views.edit_extra_income, name="edit_extra_income"),
+    path("dashboard/renda-extra/<int:extra_income_id>/excluir/", views.delete_extra_income, name="delete_extra_income"),
     path("logout/", views.logout_view, name="logout"),
 ]
