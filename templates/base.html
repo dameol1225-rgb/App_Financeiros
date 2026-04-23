@@ -63,45 +63,23 @@
                     </div>
                     <div class="topbar-controls">
                         {% if active_profile %}
+                            <a href="{% url 'profile_settings' %}" class="profile-shortcut profile-shortcut--desktop">
+                                {% if active_profile.tem_foto_perfil %}
+                                    <img src="{{ active_profile.foto_perfil }}" alt="Foto de {{ active_profile.nome }}" class="profile-avatar profile-avatar--small">
+                                {% else %}
+                                    <span class="profile-badge profile-badge--small">{{ active_profile.iniciais }}</span>
+                                {% endif %}
+                                <span class="profile-shortcut__text">
+                                    <strong>{{ active_profile.nome }}</strong>
+                                    <small>Perfil</small>
+                                </span>
+                            </a>
+
                             <details class="preference-menu" data-overlay-menu>
-                                <summary class="icon-button" aria-label="Abrir preferencias do perfil">
+                                <summary class="icon-button" aria-label="Abrir temas">
                                     <i data-lucide="sun-moon"></i>
                                 </summary>
                                 <div class="preference-menu__panel">
-                                    <div class="preference-menu__section">
-                                        <p class="preference-menu__label">Perfil</p>
-                                        <div class="preference-profile">
-                                            {% if active_profile.tem_foto_perfil %}
-                                                <img src="{{ active_profile.foto_perfil }}" alt="Foto de {{ active_profile.nome }}" class="profile-avatar profile-avatar--small">
-                                            {% else %}
-                                                <span class="profile-badge profile-badge--small">{{ active_profile.iniciais }}</span>
-                                            {% endif %}
-                                            <div>
-                                                <strong>{{ active_profile.nome }}</strong>
-                                                <p class="muted">Foto, tema e atalhos deste perfil.</p>
-                                            </div>
-                                        </div>
-
-                                        <form method="post" action="{% url 'update_profile_image' %}" enctype="multipart/form-data" class="preference-upload-form">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                            <label class="upload-trigger">
-                                                <i data-lucide="image-plus"></i>
-                                                <span>Escolher imagem</span>
-                                                <input type="file" name="image" accept="image/png,image/jpeg,image/webp">
-                                            </label>
-                                            <button type="submit" class="preference-option">Salvar foto</button>
-                                        </form>
-
-                                        {% if active_profile.tem_foto_perfil %}
-                                            <form method="post" action="{% url 'remove_profile_image' %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                                <button type="submit" class="preference-option preference-option--secondary">Remover foto</button>
-                                            </form>
-                                        {% endif %}
-                                    </div>
-
                                     <div class="preference-menu__section">
                                         <p class="preference-menu__label">Tema</p>
                                         <div class="preference-menu__options">
@@ -121,30 +99,6 @@
                                             {% endfor %}
                                         </div>
                                     </div>
-
-                                    <div class="preference-menu__section">
-                                        <p class="preference-menu__label">Visual</p>
-                                        <form method="post" action="{% url 'toggle_extra_sections' %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                            <input type="hidden" name="mostrar_funcoes_extras" value="{% if active_profile.mostrar_funcoes_extras %}0{% else %}1{% endif %}">
-                                            <button type="submit" class="preference-option preference-option--secondary">
-                                                {% if active_profile.mostrar_funcoes_extras %}
-                                                    Ocultar funcoes extras
-                                                {% else %}
-                                                    Mostrar funcoes extras
-                                                {% endif %}
-                                            </button>
-                                        </form>
-                                    </div>
-
-                                    <div class="preference-menu__section">
-                                        <p class="preference-menu__label">Conta</p>
-                                        <div class="preference-menu__options">
-                                            <a href="{% url 'select_profile' %}" class="preference-option preference-option--link">Trocar perfil</a>
-                                            <a href="{% url 'logout' %}" class="preference-option preference-option--secondary preference-option--link">Sair</a>
-                                        </div>
-                                    </div>
                                 </div>
                             </details>
                         {% endif %}
@@ -157,23 +111,19 @@
 
                 {% if active_profile %}
                     <section class="mobile-overview" data-reveal>
-                        <article class="mobile-overview__card mobile-overview__card--brand">
-                            <p class="eyebrow">Painel financeiro</p>
-                            <h3>{{ app_name }}</h3>
-                            <p class="muted">Leitura rapida do mes, gastos e fechamento.</p>
-                        </article>
-
-                        <article class="mobile-overview__card mobile-overview__card--profile">
+                        <a href="{% url 'profile_settings' %}" class="mobile-overview__card mobile-overview__card--profile mobile-overview__card--action">
                             {% if active_profile.tem_foto_perfil %}
                                 <img src="{{ active_profile.foto_perfil }}" alt="Foto de {{ active_profile.nome }}" class="profile-avatar">
                             {% else %}
                                 <span class="profile-badge">{{ active_profile.iniciais }}</span>
                             {% endif %}
-                            <div>
+                            <div class="mobile-overview__content">
                                 <p class="eyebrow">Perfil ativo</p>
                                 <strong>{{ active_profile.nome }}</strong>
+                                <p class="muted">Abrir configuracoes, preferencias e recebimentos fixos.</p>
                             </div>
-                        </article>
+                            <i data-lucide="chevron-right" class="mobile-overview__arrow"></i>
+                        </a>
                     </section>
                 {% endif %}
 

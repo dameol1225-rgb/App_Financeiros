@@ -151,3 +151,14 @@ class AuthAndProfileFlowTests(TestCase):
 
         profile_page = self.client.get(reverse("select_profile"))
         self.assertContains(profile_page, "data:image/webp;base64,")
+
+    def test_profile_settings_centralizes_profile_configuration(self):
+        self.login()
+        self.select_profile(self.samuel)
+
+        dashboard_response = self.client.get(reverse("dashboard"))
+        settings_response = self.client.get(reverse("profile_settings"))
+
+        self.assertNotContains(dashboard_response, "Recebimentos fixos")
+        self.assertContains(settings_response, "Recebimentos fixos")
+        self.assertContains(settings_response, "Tema e visual")

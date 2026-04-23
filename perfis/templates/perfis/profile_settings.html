@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil | {{ app_name }}{% endblock %}
+{% block page_title %}Configuracoes do Perfil{% endblock %}
+{% block eyebrow %}Perfil de {{ profile.nome }}{% endblock %}
+
+{% block topbar_actions %}
+    <a href="{% url 'dashboard' %}" class="ghost-button">
+        <i data-lucide="arrow-left"></i>
+        <span>Voltar ao dashboard</span>
+    </a>
+{% endblock %}
+
+{% block content %}
+    <section class="split-grid settings-grid">
+        <article class="section-card" data-reveal>
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Perfil ativo</p>
+                    <h3>{{ profile.nome }}</h3>
+                </div>
+            </div>
+
+            <div class="settings-profile-card">
+                {% if profile.tem_foto_perfil %}
+                    <img src="{{ profile.foto_perfil }}" alt="Foto de {{ profile.nome }}" class="profile-avatar profile-avatar--large">
+                {% else %}
+                    <span class="profile-badge profile-badge--large">{{ profile.iniciais }}</span>
+                {% endif %}
+                <div>
+                    <strong>{{ profile.nome }}</strong>
+                    <p class="muted">Aqui voce ajusta imagem, tema, funcoes extras e recebimentos fixos.</p>
+                </div>
+            </div>
+
+            <form method="post" action="{% url 'update_profile_image' %}" enctype="multipart/form-data" class="stack-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'profile_settings' %}">
+                <label class="upload-trigger">
+                    <i data-lucide="image-plus"></i>
+                    <span>Escolher imagem</span>
+                    <input type="file" name="image" accept="image/png,image/jpeg,image/webp">
+                </label>
+                <button type="submit" class="primary-button">Salvar foto</button>
+            </form>
+
+            {% if profile.tem_foto_perfil %}
+                <form method="post" action="{% url 'remove_profile_image' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'profile_settings' %}">
+                    <button type="submit" class="ghost-button">Remover foto</button>
+                </form>
+            {% endif %}
+        </article>
+
+        <article class="section-card" data-reveal>
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Preferencias</p>
+                    <h3>Tema e visual</h3>
+                </div>
+            </div>
+
+            <div class="preference-stack">
+                {% for value, label in theme_options %}
+                    <form method="post" action="{% url 'update_theme' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{% url 'profile_settings' %}">
+                        <button
+                            type="submit"
+                            name="theme"
+                            value="{{ value }}"
+                            class="preference-option {% if active_theme == value %}is-active{% endif %}"
+                        >
+                            {{ label }}
+                        </button>
+                    </form>
+                {% endfor %}
+            </div>
+
+            <form method="post" action="{% url 'toggle_extra_sections' %}" class="stack-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'profile_settings' %}">
+                <input type="hidden" name="mostrar_funcoes_extras" value="{% if profile.mostrar_funcoes_extras %}0{% else %}1{% endif %}">
+                <button type="submit" class="preference-option preference-option--secondary">
+                    {% if profile.mostrar_funcoes_extras %}
+                        Ocultar funcoes extras no dashboard
+                    {% else %}
+                        Mostrar funcoes extras no dashboard
+                    {% endif %}
+                </button>
+            </form>
+        </article>
+    </section>
+
+    <section class="section-card" data-reveal>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Recebimentos fixos</p>
+                <h3>Base mensal do perfil</h3>
+            </div>
+        </div>
+        <form method="post" action="{% url 'update_salary' %}" class="stack-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'profile_settings' %}">
+            <div class="split-grid salary-grid">
+                {% for field in salary_form %}
+                    <label class="field">
+                        <span>{{ field.label }}</span>
+                        {{ field }}
+                        {% if field.errors %}
+                            <small class="field-errors">{{ field.errors|striptags }}</small>
+                        {% endif %}
+                    </label>
+                {% endfor %}
+            </div>
+            <button type="submit" class="primary-button">Salvar recebimentos</button>
+        </form>
+    </section>
+{% endblock %}

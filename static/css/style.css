@@ -146,6 +146,31 @@ p {
     justify-content: flex-end;
 }
 
+.profile-shortcut {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.45rem 0.85rem 0.45rem 0.45rem;
+    border-radius: 999px;
+    border: 1px solid rgba(125, 154, 192, 0.24);
+    background: rgba(255, 255, 255, 0.82);
+    color: var(--text);
+    transition: transform var(--transition), background var(--transition), border-color var(--transition);
+}
+
+.profile-shortcut:hover {
+    transform: translateY(-2px);
+}
+
+.profile-shortcut__text {
+    display: grid;
+    line-height: 1.15;
+}
+
+.profile-shortcut__text small {
+    color: var(--muted);
+}
+
 .icon-button {
     display: inline-flex;
     align-items: center;
@@ -255,22 +280,6 @@ p {
     display: inline-flex;
     align-items: center;
     justify-content: flex-start;
-}
-
-.preference-profile {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    margin-bottom: 0.8rem;
-}
-
-.preference-profile p {
-    margin: 0.2rem 0 0;
-}
-
-.preference-upload-form {
-    display: grid;
-    gap: 0.65rem;
 }
 
 .upload-trigger {
@@ -1172,6 +1181,44 @@ p {
     background: var(--surface);
 }
 
+.mobile-overview__card--action {
+    justify-content: space-between;
+}
+
+.mobile-overview__content {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.mobile-overview__arrow {
+    color: var(--secondary);
+    flex-shrink: 0;
+}
+
+.settings-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    background: var(--surface-soft);
+    border: 1px solid rgba(125, 154, 192, 0.18);
+}
+
+.profile-avatar--large,
+.profile-badge--large {
+    width: 84px;
+    height: 84px;
+    border-radius: 26px;
+}
+
+.preference-stack {
+    display: grid;
+    gap: 0.65rem;
+}
+
 .bottom-nav {
     position: fixed;
     left: 0;
@@ -1305,6 +1352,12 @@ body.theme-black .upload-trigger {
     color: var(--text);
 }
 
+body.theme-black .profile-shortcut {
+    background: rgba(15, 23, 42, 0.82);
+    border-color: rgba(71, 85, 105, 0.55);
+    color: var(--text);
+}
+
 body.theme-black .preference-option.is-active {
     border-color: transparent;
 }
@@ -1391,6 +1444,11 @@ body.theme-black .mobile-overview__card--brand {
 
 body.theme-black .mobile-overview__card--profile,
 body.theme-black .profile-avatar {
+    border-color: rgba(71, 85, 105, 0.45);
+}
+
+body.theme-black .settings-profile-card {
+    background: rgba(15, 23, 42, 0.8);
     border-color: rgba(71, 85, 105, 0.45);
 }
 
@@ -1564,6 +1622,10 @@ body.theme-black .text-action--danger {
         align-items: center;
     }
 
+    .profile-shortcut--desktop {
+        display: none;
+    }
+
     .topbar-actions {
         justify-content: flex-end;
     }
@@ -1614,7 +1676,14 @@ body.theme-black .text-action--danger {
 
     .filter-menu__panel,
     .preference-menu__panel {
-        width: min(320px, calc(100vw - 2.2rem));
+        position: fixed;
+        top: calc(env(safe-area-inset-top) + 7rem);
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: min(340px, calc(100vw - 1.4rem));
+        max-height: calc(100vh - 9rem);
+        overflow-y: auto;
     }
 }
 
@@ -1669,4 +1738,3 @@ body.theme-black .text-action--danger {
         font-size: 12px;
     }
 }
-

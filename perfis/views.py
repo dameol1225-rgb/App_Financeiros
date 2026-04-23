@@ -49,7 +49,6 @@ def login_view(request):
     if request.method == "POST" and form.is_valid():
         auth_login(request, form.get_user())
         clear_active_profile(request)
-        messages.success(request, "Login realizado. Escolha o perfil que deseja abrir.")
         return redirect("select_profile")
 
     return render(request, "perfis/login.html", {"form": form})
@@ -62,7 +61,6 @@ def select_profile(request):
     if request.method == "POST":
         profile = get_object_or_404(Perfil, slug=request.POST.get("profile_slug"))
         set_active_profile(request, profile)
-        messages.success(request, f"Perfil {profile.nome} ativado.")
         return redirect("dashboard")
 
     return render(
@@ -77,13 +75,11 @@ def select_profile(request):
 @active_profile_required
 def dashboard(request):
     profile = get_active_profile(request)
-    salary_form = SalaryUpdateForm(profile=profile, prefix="salary")
     extra_form = RendaExtraForm(prefix="extra")
     context = get_dashboard_data(profile, filters=request.GET)
     context.update(
         {
             "profile": profile,
-            "salary_form": salary_form,
             "extra_form": extra_form,
             "categories": Categoria.objects.order_by("nome"),
         }
@@ -92,18 +88,29 @@ def dashboard(request):
 
 
 @active_profile_required
+def profile_settings(request):
+    profile = get_active_profile(request)
+    context = {
+        "profile": profile,
+        "salary_form": SalaryUpdateForm(profile=profile, prefix="salary"),
+    }
+    return render(request, "perfis/profile_settings.html", context)
+
+
+@active_profile_required
 def update_salary(request):
     if request.method != "POST":
-        return redirect("dashboard")
+        return redirect("profile_settings")
 
     profile = get_active_profile(request)
     form = SalaryUpdateForm(request.POST, profile=profile, prefix="salary")
+    redirect_to = get_safe_redirect(request, fallback=reverse("profile_settings"))
     if form.is_valid():
         form.save()
         messages.success(request, "Recebimentos fixos atualizados.")
     else:
         messages.error(request, "Revise os valores do salario antes de salvar.")
-    return redirect("dashboard")
+    return redirect(redirect_to)
 
 
 @active_profile_required
@@ -113,6 +120,7 @@ def add_extra_income(request):
 
     profile = get_active_profile(request)
     form = RendaExtraForm(request.POST, prefix="extra")
+    redirect_to = get_safe_redirect(request, fallback=reverse("dashboard"))
     if form.is_valid():
         renda_extra = form.save(commit=False)
         renda_extra.perfil = profile
@@ -120,7 +128,7 @@ def add_extra_income(request):
         messages.success(request, "Renda extra adicionada.")
     else:
         messages.error(request, "Nao foi possivel salvar a renda extra.")
-    return redirect("dashboard")
+    return redirect(redirect_to)
 
 
 @active_profile_required
