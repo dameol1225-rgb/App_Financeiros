@@ -1,5 +1,6 @@
 ﻿from collections import defaultdict
 from decimal import Decimal
+import unicodedata
 
 from django.db import transaction
 from django.db.models import Prefetch
@@ -15,6 +16,20 @@ from gastos.models import Gasto, Parcela
 
 
 ZERO = Decimal("0.00")
+MONTH_LABELS = (
+    "Jan",
+    "Fev",
+    "Mar",
+    "Abr",
+    "Mai",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Set",
+    "Out",
+    "Nov",
+    "Dez",
+)
 
 
 def parse_int(value, default, *, min_value=None, max_value=None):
@@ -41,7 +56,10 @@ def split_installments(total_amount, total_installments):
 
 
 def normalize_expense_name(name):
-    return " ".join((name or "").split()).casefold()
+    compact_name = " ".join((name or "").split())
+    normalized = unicodedata.normalize("NFKD", compact_name)
+    without_accents = "".join(char for char in normalized if not unicodedata.combining(char))
+    return without_accents.casefold()
 
 
 def sync_gasto_status(gasto):
@@ -237,26 +255,64 @@ def build_due_buckets(parcels):
                 "label": label,
                 "total": sum((item.valor for item in bucket_parcels), start=ZERO),
                 "count": len(bucket_parcels),
+                "items": bucket_parcels,
             }
         )
     return buckets
 
 
+def build_annual_expense_chart(profile, filters, today):
+    filters = filters or {}
+    selected_year = parse_int(
+        filters.get("annual_ano"),
+        today.year,
+        min_value=today.year - 10,
+        max_value=today.year + 2,
+    )
+
+    year_values = set(
+        Parcela.objects.filter(gasto__perfil=profile).values_list("data_vencimento__year", flat=True)
+    )
+    year_values.discard(None)
+    year_values.add(today.year)
+    year_values.add(selected_year)
+    year_options = sorted(year_values, reverse=True)
+
+    monthly_totals = [ZERO for _ in range(12)]
+    annual_parcels = Parcela.objects.filter(
+        gasto__perfil=profile,
+        data_vencimento__year=selected_year,
+    ).order_by("data_vencimento", "numero")
+
+    for parcela in annual_parcels:
+        monthly_totals[parcela.data_vencimento.month - 1] += parcela.valor
+
+    return {
+        "selected_annual_year": selected_year,
+        "annual_year_options": year_options,
+        "annual_expense_total": sum(monthly_totals, start=ZERO),
+        "annual_expense_chart": {
+            "labels": list(MONTH_LABELS),
+            "values": [float(value) for value in monthly_totals],
+        },
+    }
+
+
 def get_month_status(projected_balance, commitment_total):
     if projected_balance > ZERO and commitment_total <= Decimal("70"):
         return {
-            "label": "Mes no verde",
+            "label": "Mês no verde",
             "tone": "positive",
             "message": "",
         }
     if projected_balance >= ZERO:
         return {
-            "label": "Mes em atencao",
+            "label": "Mês em atenção",
             "tone": "warning",
             "message": "",
         }
     return {
-        "label": "Mes apertado",
+        "label": "Mês apertado",
         "tone": "danger",
         "message": "",
     }
@@ -350,6 +406,7 @@ def get_dashboard_data(profile, filters=None, today=None):
         available_ratio = quantize_money((projected_balance / total_income) * Decimal("100"))
 
     due_filter_data = build_due_filter_data(profile, filters, today)
+    annual_chart_data = build_annual_expense_chart(profile, filters, today)
 
     return {
         "reference_date": today,
@@ -373,6 +430,7 @@ def get_dashboard_data(profile, filters=None, today=None):
             "colors": [item["color"] for item in category_breakdown],
         },
         **due_filter_data,
+        **annual_chart_data,
     }
 
 
@@ -466,3 +524,4 @@ def get_print_preview_data(profile):
         "gastos": gastos,
         "summary": dashboard,
     }
+

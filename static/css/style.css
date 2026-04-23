@@ -231,7 +231,7 @@ p {
 
 .preference-menu__label {
     margin: 0 0 0.65rem;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -1028,7 +1028,7 @@ p {
 }
 
 .summary-grid--triple .metric-card:last-child {
-    grid-column: 1 / -1;
+    grid-column: auto;
 }
 
 .hero-layout--clean {
@@ -1055,6 +1055,26 @@ p {
 
 .section-card--expanded {
     margin-top: 1rem;
+}
+
+.chart-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.85rem;
+}
+
+.chart-year-field {
+    width: min(220px, 100%);
+}
+
+.chart-card-shell {
+    position: relative;
+    min-height: 320px;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    background: var(--surface-soft);
+    border: 1px solid rgba(125, 154, 192, 0.18);
 }
 
 .due-list-grid,
@@ -1130,6 +1150,87 @@ p {
 
 .due-summary-grid--compact {
     gap: 0.75rem;
+}
+
+.due-day-card {
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(125, 154, 192, 0.18);
+    background: linear-gradient(145deg, rgba(248, 251, 255, 0.98), rgba(232, 242, 255, 0.98));
+    overflow: hidden;
+}
+
+.due-day-card summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.due-day-card summary::-webkit-details-marker {
+    display: none;
+}
+
+.due-day-card__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.due-day-card__summary p,
+.due-day-card__summary span {
+    margin: 0;
+    color: var(--muted);
+}
+
+.due-day-card__summary strong {
+    display: block;
+    margin-block: 0.25rem;
+}
+
+.due-day-card__toggle {
+    flex-shrink: 0;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--primary);
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.due-day-card[open] .due-day-card__toggle {
+    background: rgba(14, 165, 233, 0.12);
+    color: var(--primary-strong);
+}
+
+.due-day-card__items {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0 1rem 1rem;
+}
+
+.due-day-item {
+    padding: 0.95rem 1rem;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(125, 154, 192, 0.16);
+}
+
+.due-day-item__head,
+.due-day-item__meta,
+.action-link-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+.due-day-item__meta {
+    margin-top: 0.7rem;
+    color: var(--muted);
+}
+
+.due-day-item__meta strong {
+    color: var(--text);
 }
 
 .print-pill-grid {
@@ -1231,13 +1332,35 @@ p {
     gap: 0.65rem;
 }
 
+.action-card-grid {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.action-link-card {
+    padding: 1rem 1.05rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(125, 154, 192, 0.18);
+    background: var(--surface-soft);
+    transition: transform var(--transition), border-color var(--transition), background var(--transition);
+}
+
+.action-link-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(37, 99, 235, 0.28);
+}
+
+.action-link-card i {
+    color: var(--primary);
+}
+
 .bottom-nav {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 0.5rem;
     padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom));
     background: rgba(245, 249, 255, 0.94);
@@ -1259,7 +1382,7 @@ p {
 
 .bottom-nav a {
     flex-direction: column;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
 }
 
 .bottom-nav a.is-active,
@@ -1404,6 +1527,8 @@ body.theme-black .mini-list__item,
 body.theme-black .stat-pair,
 body.theme-black .history-row,
 body.theme-black .due-pill-card,
+body.theme-black .due-day-card,
+body.theme-black .due-day-item,
 body.theme-black .breakdown-item,
 body.theme-black .chart-insight,
 body.theme-black .accent-card,
@@ -1464,6 +1589,12 @@ body.theme-black .settings-profile-card {
     border-color: rgba(71, 85, 105, 0.45);
 }
 
+body.theme-black .action-link-card,
+body.theme-black .chart-card-shell {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: rgba(71, 85, 105, 0.45);
+}
+
 body.theme-black .sidebar-nav a {
     color: rgba(226, 232, 240, 0.78);
 }
@@ -1515,6 +1646,10 @@ body.theme-black .text-action--danger {
     }
 
     .due-list-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .action-card-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -1582,6 +1717,10 @@ body.theme-black .text-action--danger {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .summary-grid.compact.summary-grid--triple {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .expense-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1616,6 +1755,10 @@ body.theme-black .text-action--danger {
     .card-link-row,
     .due-list-card__head,
     .due-list-card__meta,
+    .due-day-item__head,
+    .due-day-item__meta,
+    .due-day-card__summary,
+    .action-link-card,
     .print-expense-card__head,
     .print-row-card {
         width: 100%;
@@ -1660,6 +1803,15 @@ body.theme-black .text-action--danger {
         width: 100%;
     }
 
+    .chart-filter-bar {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .chart-year-field {
+        width: 100%;
+    }
+
     .meter-block__header,
     .meter-caption,
     .expense-card__stats,
@@ -1701,6 +1853,10 @@ body.theme-black .text-action--danger {
         width: min(340px, calc(100vw - 1.4rem));
         max-height: calc(100vh - 9rem);
         overflow-y: auto;
+    }
+
+    .bottom-nav a {
+        padding-inline: 0.4rem;
     }
 }
 
@@ -1755,3 +1911,4 @@ body.theme-black .text-action--danger {
         font-size: 12px;
     }
 }
+

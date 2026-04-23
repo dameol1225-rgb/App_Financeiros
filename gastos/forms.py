@@ -1,6 +1,7 @@
-from django import forms
+﻿from django import forms
 
 from gastos.models import Categoria, Gasto
+from gastos.services import normalize_expense_name
 
 
 class GastoForm(forms.ModelForm):
@@ -18,12 +19,14 @@ class GastoForm(forms.ModelForm):
         self.saved_name_choices = []
 
         if profile:
-            names = (
-                profile.gastos.order_by("nome")
-                .values_list("nome", flat=True)
-                .distinct()
-            )
-            self.saved_name_choices = [name for name in names if name]
+            seen_names = set()
+            ordered_names = profile.gastos.order_by("nome").values_list("nome", flat=True)
+            for name in ordered_names:
+                normalized_name = normalize_expense_name(name)
+                if not name or normalized_name in seen_names:
+                    continue
+                seen_names.add(normalized_name)
+                self.saved_name_choices.append(name)
 
     class Meta:
         model = Gasto
@@ -36,7 +39,7 @@ class GastoForm(forms.ModelForm):
             "data_inicio",
         )
         widgets = {
-            "nome": forms.TextInput(attrs={"placeholder": "Ex.: Cartao Nubank"}),
+            "nome": forms.TextInput(attrs={"placeholder": "Ex.: Cartão Nubank"}),
             "valor_total": forms.NumberInput(attrs={"step": "0.01", "min": "0.01"}),
             "quantidade_parcelas": forms.NumberInput(attrs={"min": "1", "max": "48"}),
             "data_inicio": forms.DateInput(attrs={"type": "date"}),

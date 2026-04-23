@@ -1,4 +1,4 @@
-from datetime import timedelta
+﻿from datetime import timedelta
 from decimal import Decimal
 
 from django.conf import settings
@@ -128,6 +128,10 @@ class FinanceFlowTests(TestCase):
         self.assertEqual(len(response.context["due_installments"]), 1)
         self.assertEqual(response.context["due_installments"][0].gasto.nome, "Mercado do mes")
         self.assertEqual(response.context["selected_due_status"], Parcela.Status.PAGO)
+        due_buckets = {bucket["day"]: bucket for bucket in response.context["due_buckets"]}
+        self.assertEqual(len(due_buckets[20]["items"]), 1)
+        self.assertContains(response, "due-day-card")
+        self.assertNotContains(response, "due-list-grid")
 
     def test_history_filters_category_and_status(self):
         today = timezone.localdate().replace(day=1)
@@ -313,6 +317,71 @@ class FinanceFlowTests(TestCase):
         self.assertEqual(debt_card["nome"], "Carro")
         self.assertEqual(debt_card["remaining_count"], 5)
         self.assertEqual(debt_card["remaining_total"], Decimal("300.00"))
+
+    def test_dashboard_groups_names_even_with_accent_variation(self):
+        today = timezone.localdate().replace(day=1)
+        create_gasto_for_profile(
+            self.samuel,
+            {
+                "categoria": self.alimentacao,
+                "nome": "Cartão Assaí",
+                "valor_total": Decimal("100.00"),
+                "quantidade_parcelas": 2,
+                "dia_vencimento": 20,
+                "data_inicio": today,
+            },
+        )
+        create_gasto_for_profile(
+            self.samuel,
+            {
+                "categoria": self.alimentacao,
+                "nome": "Cartao Assai",
+                "valor_total": Decimal("90.00"),
+                "quantidade_parcelas": 3,
+                "dia_vencimento": 20,
+                "data_inicio": today,
+            },
+        )
+
+        self.login_and_select(self.samuel)
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(len(response.context["debt_cards"]), 1)
+        self.assertContains(response, "Cartão Assaí")
+
+    def test_annual_expense_chart_respects_selected_year(self):
+        current_year = timezone.localdate().year
+        previous_year = current_year - 1
+
+        create_gasto_for_profile(
+            self.samuel,
+            {
+                "categoria": self.alimentacao,
+                "nome": "Ano atual",
+                "valor_total": Decimal("120.00"),
+                "quantidade_parcelas": 2,
+                "dia_vencimento": 5,
+                "data_inicio": timezone.datetime(current_year, 1, 1).date(),
+            },
+        )
+        create_gasto_for_profile(
+            self.samuel,
+            {
+                "categoria": self.transporte,
+                "nome": "Ano anterior",
+                "valor_total": Decimal("300.00"),
+                "quantidade_parcelas": 3,
+                "dia_vencimento": 20,
+                "data_inicio": timezone.datetime(previous_year, 1, 1).date(),
+            },
+        )
+
+        self.login_and_select(self.samuel)
+        response = self.client.get(reverse("dashboard"), {"annual_ano": previous_year})
+
+        self.assertEqual(response.context["selected_annual_year"], previous_year)
+        self.assertEqual(response.context["annual_expense_total"], Decimal("300.00"))
+        self.assertEqual(response.context["annual_expense_chart"]["values"][0], 100.0)
 
     def test_purge_financial_history_removes_only_due_profiles(self):
         old_date = timezone.localdate() - timedelta(days=370)

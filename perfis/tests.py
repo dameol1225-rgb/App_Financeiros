@@ -1,6 +1,5 @@
+﻿from decimal import Decimal
 from io import BytesIO
-
-from datetime import timedelta
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -122,8 +121,8 @@ class AuthAndProfileFlowTests(TestCase):
 
         response = self.client.get(reverse("dashboard"))
 
-        self.assertNotContains(response, "Recebimentos fixos")
-        self.assertNotContains(response, "Adicionar renda extra")
+        self.assertNotContains(response, "Dívidas ativas")
+        self.assertNotContains(response, "Parcelas restantes")
 
     def test_profile_image_is_saved_in_database(self):
         self.login()
@@ -179,11 +178,11 @@ class AuthAndProfileFlowTests(TestCase):
                 "descricao": "Freelancer atualizado",
                 "valor": "180.00",
                 "data": timezone.localdate().isoformat(),
-                "next": reverse("dashboard"),
+                "next": reverse("extra_income_page"),
             },
         )
 
-        self.assertRedirects(response, reverse("dashboard"))
+        self.assertRedirects(response, reverse("extra_income_page"))
         renda.refresh_from_db()
         self.assertEqual(renda.descricao, "Freelancer atualizado")
         self.assertEqual(str(renda.valor), "180.00")
@@ -200,8 +199,47 @@ class AuthAndProfileFlowTests(TestCase):
 
         response = self.client.post(
             reverse("delete_extra_income", args=[renda.id]),
-            {"next": reverse("dashboard")},
+            {"next": reverse("extra_income_page")},
         )
 
-        self.assertRedirects(response, reverse("dashboard"))
+        self.assertRedirects(response, reverse("extra_income_page"))
         self.assertFalse(RendaExtra.objects.filter(id=renda.id).exists())
+
+    def test_mobile_navigation_exposes_renda_perfil_e_mais(self):
+        self.login()
+        self.select_profile(self.samuel)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertContains(response, "Renda")
+        self.assertContains(response, "Perfil")
+        self.assertContains(response, "Mais")
+
+    def test_more_menu_lists_secondary_actions(self):
+        self.login()
+        self.select_profile(self.samuel)
+
+        response = self.client.get(reverse("more_menu"))
+
+        self.assertContains(response, "Histórico")
+        self.assertContains(response, "Imprimir / PDF")
+        self.assertContains(response, "Trocar perfil")
+
+    def test_extra_income_page_shows_filtered_entries(self):
+        self.login()
+        self.select_profile(self.samuel)
+        current_date = timezone.localdate()
+        RendaExtra.objects.create(
+            perfil=self.samuel,
+            descricao="Freela mobile",
+            valor=Decimal("320.00"),
+            data=current_date,
+        )
+
+        response = self.client.get(
+            reverse("extra_income_page"),
+            {"mes": current_date.month, "ano": current_date.year},
+        )
+
+        self.assertContains(response, "Adicionar renda extra")
+        self.assertContains(response, "Freela mobile")

@@ -1,0 +1,57 @@
+﻿{% extends "base.html" %}
+
+{% block title %}Mais | {{ app_name }}{% endblock %}
+{% block page_title %}Mais{% endblock %}
+{% block eyebrow %}Ações secundárias do perfil{% endblock %}
+
+{% block topbar_actions %}
+    <a href="{% url 'dashboard' %}" class="ghost-button">
+        <i data-lucide="arrow-left"></i>
+        <span>Voltar</span>
+    </a>
+{% endblock %}
+
+{% block content %}
+    <section class="section-card" data-reveal>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Atalhos</p>
+                <h3>Outras áreas do app</h3>
+            </div>
+        </div>
+
+        <div class="action-card-grid">
+            <a href="{% url 'historico' %}" class="action-link-card">
+                <i data-lucide="history"></i>
+                <div>
+                    <strong>Histórico</strong>
+                    <p class="muted">Veja meses anteriores e filtre seus lançamentos.</p>
+                </div>
+            </a>
+
+            <a href="{% url 'export_pdf' %}" class="action-link-card">
+                <i data-lucide="printer"></i>
+                <div>
+                    <strong>Imprimir / PDF</strong>
+                    <p class="muted">Abra a visualização pronta para impressão ou salvar em PDF.</p>
+                </div>
+            </a>
+
+            <a href="{% url 'select_profile' %}" class="action-link-card">
+                <i data-lucide="users"></i>
+                <div>
+                    <strong>Trocar perfil</strong>
+                    <p class="muted">Volte para a lista de perfis disponíveis.</p>
+                </div>
+            </a>
+
+            <a href="{% url 'logout' %}" class="action-link-card">
+                <i data-lucide="log-out"></i>
+                <div>
+                    <strong>Sair</strong>
+                    <p class="muted">Encerrar a sessão atual com segurança.</p>
+                </div>
+            </a>
+        </div>
+    </section>
+{% endblock %}

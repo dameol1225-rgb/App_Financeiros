@@ -34,6 +34,10 @@
                                 <i data-lucide="receipt"></i>
                                 <span>Gastos</span>
                             </a>
+                            <a href="{% url 'extra_income_page' %}" class="{% if current == 'extra_income_page' or current == 'edit_extra_income' %}is-active{% endif %}">
+                                <i data-lucide="wallet-cards"></i>
+                                <span>Renda</span>
+                            </a>
                             <a href="{% url 'historico' %}" class="{% if current == 'historico' %}is-active{% endif %}">
                                 <i data-lucide="history"></i>
                                 <span>Histórico</span>
@@ -109,24 +113,6 @@
                     </div>
                 </header>
 
-                {% if active_profile %}
-                    <section class="mobile-overview" data-reveal>
-                        <a href="{% url 'profile_settings' %}" class="mobile-overview__card mobile-overview__card--profile mobile-overview__card--action">
-                            {% if active_profile.tem_foto_perfil %}
-                                <img src="{{ active_profile.foto_perfil }}" alt="Foto de {{ active_profile.nome }}" class="profile-avatar">
-                            {% else %}
-                                <span class="profile-badge">{{ active_profile.iniciais }}</span>
-                            {% endif %}
-                            <div class="mobile-overview__content">
-                                <p class="eyebrow">Perfil ativo</p>
-                                <strong>{{ active_profile.nome }}</strong>
-                                <p class="muted">Abrir configurações, preferências e recebimentos fixos.</p>
-                            </div>
-                            <i data-lucide="chevron-right" class="mobile-overview__arrow"></i>
-                        </a>
-                    </section>
-                {% endif %}
-
                 <main class="page-content">
                     {% if cleanup_notice %}
                         <section class="alert-banner" data-reveal>
@@ -162,13 +148,17 @@
                             <i data-lucide="receipt"></i>
                             <span>Gastos</span>
                         </a>
-                        <a href="{% url 'historico' %}" class="{% if current == 'historico' %}is-active{% endif %}">
-                            <i data-lucide="history"></i>
-                            <span>Histórico</span>
+                        <a href="{% url 'extra_income_page' %}" class="{% if current == 'extra_income_page' or current == 'edit_extra_income' %}is-active{% endif %}">
+                            <i data-lucide="wallet-cards"></i>
+                            <span>Renda</span>
                         </a>
-                        <a href="{% url 'export_pdf' %}" class="{% if current == 'export_pdf' %}is-active{% endif %}">
-                            <i data-lucide="printer"></i>
-                            <span>PDF</span>
+                        <a href="{% url 'profile_settings' %}" class="{% if current == 'profile_settings' %}is-active{% endif %}">
+                            <i data-lucide="user-round-cog"></i>
+                            <span>Perfil</span>
+                        </a>
+                        <a href="{% url 'more_menu' %}" class="{% if current == 'more_menu' or current == 'historico' or current == 'export_pdf' %}is-active{% endif %}">
+                            <i data-lucide="ellipsis"></i>
+                            <span>Mais</span>
                         </a>
                     {% endwith %}
                 </nav>

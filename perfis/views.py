@@ -1,4 +1,5 @@
-import base64
+﻿import base64
+from decimal import Decimal
 from io import BytesIO
 
 from django.contrib import messages
@@ -6,10 +7,12 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from PIL import Image, ImageOps
 
 from financeiro.constants import THEME_CHOICES
+from financeiro.utils import month_bounds
 from gastos.models import Categoria
 from gastos.services import get_dashboard_data
 from perfis.decorators import active_profile_required
@@ -39,6 +42,23 @@ def get_safe_redirect(request, fallback=None):
     ):
         return fallback or reverse("dashboard")
     return redirect_to
+
+
+def get_selected_period(request, today):
+    try:
+        month = int(request.GET.get("mes", today.month))
+    except (TypeError, ValueError):
+        month = today.month
+
+    try:
+        year = int(request.GET.get("ano", today.year))
+    except (TypeError, ValueError):
+        year = today.year
+
+    if month not in range(1, 13):
+        month = today.month
+
+    return year, month
 
 
 def login_view(request):
@@ -75,16 +95,48 @@ def select_profile(request):
 @active_profile_required
 def dashboard(request):
     profile = get_active_profile(request)
-    extra_form = RendaExtraForm(prefix="extra")
     context = get_dashboard_data(profile, filters=request.GET)
     context.update(
         {
             "profile": profile,
-            "extra_form": extra_form,
             "categories": Categoria.objects.order_by("nome"),
         }
     )
     return render(request, "perfis/dashboard.html", context)
+
+
+@active_profile_required
+def extra_income_page(request):
+    profile = get_active_profile(request)
+    today = timezone.localdate()
+    selected_year, selected_month = get_selected_period(request, today)
+    reference_start, reference_end = month_bounds(selected_year, selected_month)
+    extra_income = list(
+        profile.rendas_extras.filter(data__range=(reference_start, reference_end)).order_by("-data", "-criado_em")
+    )
+    extra_total = sum((item.valor for item in extra_income), start=Decimal("0.00"))
+
+    year_values = set(profile.rendas_extras.values_list("data__year", flat=True))
+    year_values.discard(None)
+    year_values.add(today.year)
+    year_values.add(selected_year)
+
+    return render(
+        request,
+        "perfis/extra_income.html",
+        {
+            "profile": profile,
+            "form": RendaExtraForm(prefix="extra"),
+            "extra_income": extra_income,
+            "extra_total": extra_total,
+            "selected_month": selected_month,
+            "selected_year": selected_year,
+            "month_options": range(1, 13),
+            "year_options": sorted(year_values, reverse=True),
+            "reference_start": reference_start,
+            "reference_end": reference_end,
+        },
+    )
 
 
 @active_profile_required
@@ -95,6 +147,12 @@ def profile_settings(request):
         "salary_form": SalaryUpdateForm(profile=profile, prefix="salary"),
     }
     return render(request, "perfis/profile_settings.html", context)
+
+
+@active_profile_required
+def more_menu(request):
+    profile = get_active_profile(request)
+    return render(request, "perfis/more.html", {"profile": profile})
 
 
 @active_profile_required
@@ -116,11 +174,11 @@ def update_salary(request):
 @active_profile_required
 def add_extra_income(request):
     if request.method != "POST":
-        return redirect("dashboard")
+        return redirect("extra_income_page")
 
     profile = get_active_profile(request)
     form = RendaExtraForm(request.POST, prefix="extra")
-    redirect_to = get_safe_redirect(request, fallback=reverse("dashboard"))
+    redirect_to = get_safe_redirect(request, fallback=reverse("extra_income_page"))
     if form.is_valid():
         renda_extra = form.save(commit=False)
         renda_extra.perfil = profile
@@ -141,7 +199,7 @@ def edit_extra_income(request, extra_income_id):
         if form.is_valid():
             form.save()
             messages.success(request, "Renda extra atualizada.")
-            return redirect(get_safe_redirect(request, fallback=reverse("dashboard")))
+            return redirect(get_safe_redirect(request, fallback=reverse("extra_income_page")))
         messages.error(request, "Nao foi possivel salvar as alteracoes da renda extra.")
 
     return render(
@@ -158,13 +216,13 @@ def edit_extra_income(request, extra_income_id):
 @active_profile_required
 def delete_extra_income(request, extra_income_id):
     if request.method != "POST":
-        return redirect("dashboard")
+        return redirect("extra_income_page")
 
     profile = get_active_profile(request)
     extra_income = get_object_or_404(RendaExtra, pk=extra_income_id, perfil=profile)
     extra_income.delete()
     messages.success(request, "Renda extra removida.")
-    return redirect(get_safe_redirect(request, fallback=reverse("dashboard")))
+    return redirect(get_safe_redirect(request, fallback=reverse("extra_income_page")))
 
 
 @active_profile_required
@@ -253,3 +311,4 @@ def logout_view(request):
     auth_logout(request)
     messages.info(request, "Sua sessao foi encerrada.")
     return redirect("login")
+

@@ -1,11 +1,11 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Editar renda extra | {{ app_name }}{% endblock %}
 {% block page_title %}Editar renda extra{% endblock %}
 {% block eyebrow %}Ajuste salvo no banco{% endblock %}
 
 {% block topbar_actions %}
-    <a href="{% url 'dashboard' %}" class="ghost-button">Voltar</a>
+    <a href="{% url 'extra_income_page' %}" class="ghost-button">Voltar</a>
 {% endblock %}
 
 {% block content %}
@@ -21,7 +21,7 @@
 
             <form method="post" class="stack-form">
                 {% csrf_token %}
-                <input type="hidden" name="next" value="{% url 'dashboard' %}">
+                <input type="hidden" name="next" value="{% url 'extra_income_page' %}">
                 {% for field in form %}
                     <label class="field">
                         <span>{{ field.label }}</span>
@@ -49,7 +49,7 @@
                 </div>
                 <div class="mini-list__item">
                     <strong>2.</strong>
-                    <p class="muted">A soma do mês e os cards do dashboard atualizam com base na edição.</p>
+                    <p class="muted">A soma do mês e os cards da aba de renda atualizam com base na edição.</p>
                 </div>
             </div>
         </aside>

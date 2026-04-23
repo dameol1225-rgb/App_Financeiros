@@ -12,6 +12,8 @@
         </summary>
         <div class="filter-menu__panel">
             <form method="get" class="filter-menu__form">
+                <input type="hidden" name="annual_ano" value="{{ selected_annual_year }}">
+
                 <label class="field field--compact">
                     <span>Mês</span>
                     <select name="due_mes">
@@ -100,123 +102,117 @@
 
         <div class="summary-grid compact summary-grid--tight summary-grid--triple">
             <article class="metric-card tone-blue" data-reveal>
-                <p>Entradas fixas</p>
-                <strong>R$ {{ salary_total|floatformat:2 }}</strong>
-                <span>Base mensal</span>
+                <p>Saídas previstas</p>
+                <strong>R$ {{ expense_total|floatformat:2 }}</strong>
+                <span>Parcelas do mês atual</span>
             </article>
             <article class="metric-card tone-cyan" data-reveal>
-                <p>Renda extra</p>
-                <strong>R$ {{ extra_total|floatformat:2 }}</strong>
-                <span>No período atual</span>
+                <p>Compromissos ativos</p>
+                <strong>{{ debt_cards|length }}</strong>
+                <span>Cards consolidados por nome</span>
             </article>
-            <article class="metric-card tone-slate" data-reveal>
-                <p>Saídas</p>
-                <strong>R$ {{ expense_total|floatformat:2 }}</strong>
-                <span>Parcelas do mês</span>
+            <article class="metric-card tone-green" data-reveal>
+                <p>Vencimentos filtrados</p>
+                <strong>{{ due_installments_count }}</strong>
+                <span>{{ due_gastos_count }} compra(s) no período</span>
             </article>
         </div>
     </section>
 
     <section class="section-card section-card--dense section-card--expanded" data-reveal>
-            <div class="section-heading section-heading--stacked">
-                <div>
-                    <p class="eyebrow">Próximos vencimentos</p>
-                    <h3>{{ due_reference_start|date:"F \\d\\e Y" }}</h3>
-                </div>
-                <div class="section-meta">
-                    <span class="tag">{{ due_installments_count }} parcela(s)</span>
-                    <span class="tag">R$ {{ due_installments_total|floatformat:2 }}</span>
-                    {% if selected_due_category %}
-                        <span class="tag">Categoria filtrada</span>
-                    {% endif %}
-                    {% if selected_due_status != "pendente" %}
-                        <span class="tag">Status: {{ selected_due_status }}</span>
-                    {% endif %}
-                </div>
+        <div class="section-heading section-heading--stacked">
+            <div>
+                <p class="eyebrow">Gastos por mês</p>
+                <h3>{{ selected_annual_year }}</h3>
             </div>
-
-            <div class="due-summary-grid due-summary-grid--compact">
-                {% for bucket in due_buckets %}
-                    <article class="due-pill-card">
-                        <p>{{ bucket.label }}</p>
-                        <strong>R$ {{ bucket.total|floatformat:2 }}</strong>
-                        <span>{{ bucket.count }} item(ns)</span>
-                    </article>
-                {% endfor %}
+            <div class="section-meta">
+                <span class="tag">R$ {{ annual_expense_total|floatformat:2 }}</span>
+                <span class="tag">12 meses</span>
             </div>
+        </div>
 
-            <div class="due-list-grid">
-                {% for parcela in due_installments %}
-                    <article class="due-list-card">
-                        <div class="due-list-card__head">
+        <form method="get" class="chart-filter-bar">
+            <input type="hidden" name="due_mes" value="{{ selected_due_month }}">
+            <input type="hidden" name="due_ano" value="{{ selected_due_year }}">
+            <input type="hidden" name="due_categoria" value="{{ selected_due_category }}">
+            <input type="hidden" name="due_status" value="{{ selected_due_status }}">
+
+            <label class="field field--compact chart-year-field">
+                <span>Ano</span>
+                <select name="annual_ano">
+                    {% for option in annual_year_options %}
+                        <option value="{{ option }}" {% if selected_annual_year == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit" class="ghost-button small-button">Atualizar gráfico</button>
+        </form>
+
+        <div class="chart-card-shell">
+            <canvas id="annualExpenseChart"></canvas>
+        </div>
+        {{ annual_expense_chart|json_script:"annual-expense-chart-data" }}
+    </section>
+
+    <section class="section-card section-card--dense section-card--expanded" data-reveal>
+        <div class="section-heading section-heading--stacked">
+            <div>
+                <p class="eyebrow">Próximos vencimentos</p>
+                <h3>{{ due_reference_start|date:"F \\d\\e Y" }}</h3>
+            </div>
+            <div class="section-meta">
+                <span class="tag">{{ due_installments_count }} parcela(s)</span>
+                <span class="tag">R$ {{ due_installments_total|floatformat:2 }}</span>
+                {% if selected_due_category %}
+                    <span class="tag">Categoria filtrada</span>
+                {% endif %}
+                {% if selected_due_status != "pendente" %}
+                    <span class="tag">Status: {{ selected_due_status }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="due-summary-grid due-summary-grid--compact due-summary-grid--expandable">
+            {% for bucket in due_buckets %}
+                <details class="due-day-card">
+                    <summary>
+                        <div class="due-day-card__summary">
                             <div>
-                                <strong>{{ parcela.gasto.nome }}</strong>
-                                <p class="muted">{{ parcela.gasto.categoria.nome }}</p>
+                                <p>{{ bucket.label }}</p>
+                                <strong>R$ {{ bucket.total|floatformat:2 }}</strong>
+                                <span>{{ bucket.count }} item(ns)</span>
                             </div>
-                            <span class="status-pill {% if parcela.status == 'pago' %}done{% endif %}">{{ parcela.get_status_display }}</span>
+                            <span class="due-day-card__toggle">
+                                {% if bucket.count %}Expandir{% else %}Vazio{% endif %}
+                            </span>
                         </div>
-                        <div class="due-list-card__meta">
-                            <span>{{ parcela.data_vencimento|date:"d/m/Y" }}</span>
-                            <strong>R$ {{ parcela.valor|floatformat:2 }}</strong>
-                        </div>
-                    </article>
-                {% empty %}
-                    <p class="muted">Nenhuma parcela encontrada para os filtros escolhidos.</p>
-                {% endfor %}
-            </div>
+                    </summary>
+
+                    <div class="due-day-card__items">
+                        {% for parcela in bucket.items %}
+                            <article class="due-day-item">
+                                <div class="due-day-item__head">
+                                    <div>
+                                        <strong>{{ parcela.gasto.nome }}</strong>
+                                        <p class="muted">{{ parcela.gasto.categoria.nome }}</p>
+                                    </div>
+                                    <span class="status-pill {% if parcela.status == 'pago' %}done{% endif %}">{{ parcela.get_status_display }}</span>
+                                </div>
+                                <div class="due-day-item__meta">
+                                    <span>{{ parcela.data_vencimento|date:"d/m/Y" }}</span>
+                                    <strong>R$ {{ parcela.valor|floatformat:2 }}</strong>
+                                </div>
+                            </article>
+                        {% empty %}
+                            <p class="muted">Nada previsto nesse dia com os filtros atuais.</p>
+                        {% endfor %}
+                    </div>
+                </details>
+            {% endfor %}
+        </div>
     </section>
 
     {% if profile.mostrar_funcoes_extras %}
-        <section class="section-card" data-reveal>
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">Entrada manual</p>
-                    <h3>Adicionar renda extra</h3>
-                </div>
-            </div>
-            <form method="post" action="{% url 'add_extra_income' %}" class="stack-form">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{% url 'dashboard' %}">
-                {% for field in extra_form %}
-                    <label class="field">
-                        <span>{{ field.label }}</span>
-                        {{ field }}
-                        {% if field.errors %}
-                            <small class="field-errors">{{ field.errors|striptags }}</small>
-                        {% endif %}
-                    </label>
-                {% endfor %}
-                <button type="submit" class="primary-button">Salvar renda extra</button>
-            </form>
-
-            <div class="mini-list compact-list">
-                <div class="section-heading compact">
-                    <h4>Últimos lançamentos</h4>
-                </div>
-                {% for item in extra_income %}
-                    <div class="mini-list__item">
-                        <div>
-                            <strong>{{ item.descricao }}</strong>
-                            <p class="muted">{{ item.data|date:"d/m/Y" }}</p>
-                        </div>
-                        <div class="mini-list__aside">
-                            <span>R$ {{ item.valor|floatformat:2 }}</span>
-                            <div class="card-link-row card-link-row--compact">
-                                <a href="{% url 'edit_extra_income' item.id %}" class="text-action">Editar</a>
-                                <form method="post" action="{% url 'delete_extra_income' item.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="next" value="{% url 'dashboard' %}">
-                                    <button type="submit" class="text-action text-action--danger">Excluir</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                {% empty %}
-                    <p class="muted">Nenhuma renda extra registrada neste mês.</p>
-                {% endfor %}
-            </div>
-        </section>
-
         <section class="section-card" data-reveal>
             <div class="section-heading">
                 <div>
