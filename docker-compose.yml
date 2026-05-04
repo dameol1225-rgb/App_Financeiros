@@ -23,12 +23,8 @@ services:
     depends_on:
       - db
     environment:
-      DB_ENGINE: postgresql
-      POSTGRES_DB: financeiro
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_HOST: db
-      POSTGRES_PORT: "5432"
+      DATABASE_URL: postgresql://user:password@db:5432/financeiro
+      DJANGO_DEBUG: "1"
 
   scheduler:
     build: .
@@ -39,12 +35,8 @@ services:
     depends_on:
       - db
     environment:
-      DB_ENGINE: postgresql
-      POSTGRES_DB: financeiro
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_HOST: db
-      POSTGRES_PORT: "5432"
+      DATABASE_URL: postgresql://user:password@db:5432/financeiro
+      DJANGO_DEBUG: "1"
 
 volumes:
   postgres_data:

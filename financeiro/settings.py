@@ -2,16 +2,18 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+IS_RENDER = "RENDER" in os.environ
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
     os.getenv("DJANGO_SECRET_KEY", "django-insecure-casal-organizado-local"),
 )
-DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
+DEBUG = os.getenv("DJANGO_DEBUG", "0" if IS_RENDER else "1") == "1"
 ALLOWED_HOSTS = [host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",") if host.strip()]
 CSRF_TRUSTED_ORIGINS = []
 
@@ -59,31 +61,27 @@ TEMPLATES = [
 WSGI_APPLICATION = "financeiro.wsgi.application"
 
 
-if os.getenv("DB_ENGINE", "").lower() == "postgresql" or os.getenv("POSTGRES_DB"):
+DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_SSL_REQUIRE = os.getenv("DATABASE_SSL_REQUIRE", "1" if IS_RENDER else "0") == "1"
+
+if DATABASE_URL:
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("POSTGRES_DB", "financeiro"),
-            "USER": os.getenv("POSTGRES_USER", "user"),
-            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "password"),
-            "HOST": os.getenv("POSTGRES_HOST", "db"),
-            "PORT": os.getenv("POSTGRES_PORT", "5432"),
-        }
-    }
-elif os.getenv("DATABASE_URL"):
-    DATABASES = {
-        "default": dj_database_url.config(
-            default=os.getenv("DATABASE_URL"),
+        "default": dj_database_url.parse(
+            DATABASE_URL,
             conn_max_age=600,
+            conn_health_checks=True,
+            ssl_require=DATABASE_SSL_REQUIRE,
         )
     }
-else:
+elif DEBUG and not IS_RENDER:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+else:
+    raise ImproperlyConfigured("DATABASE_URL must be set in production.")
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -122,7 +120,7 @@ LOGOUT_REDIRECT_URL = "login"
 CASAL_ORGANIZADO_USERNAME = os.getenv("CASAL_ORGANIZADO_USERNAME", "Casalorganizado")
 CASAL_ORGANIZADO_PASSWORD = os.getenv("CASAL_ORGANIZADO_PASSWORD", "413724Financas")
 
-if "RENDER" in os.environ:
+if IS_RENDER:
     DEBUG = False
     render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
     if render_hostname:
@@ -139,3 +137,7 @@ if "RENDER" in os.environ:
     STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = os.getenv("DJANGO_SECURE_SSL_REDIRECT", "1") == "1"
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = int(os.getenv("DJANGO_SECURE_HSTS_SECONDS", "0"))

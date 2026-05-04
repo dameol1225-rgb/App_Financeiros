@@ -1,9 +1,9 @@
 #!/bin/sh
 set -e
 
-if [ "${DB_ENGINE:-sqlite}" = "postgresql" ]; then
+if [ -n "${DATABASE_URL:-}" ]; then
   echo "Waiting for PostgreSQL..."
-  until python -c "import os, psycopg2; psycopg2.connect(dbname=os.environ['POSTGRES_DB'], user=os.environ['POSTGRES_USER'], password=os.environ['POSTGRES_PASSWORD'], host=os.environ.get('POSTGRES_HOST', 'db'), port=os.environ.get('POSTGRES_PORT', '5432')).close()"; do
+  until python -c "import os, psycopg2; psycopg2.connect(os.environ['DATABASE_URL']).close()"; do
     sleep 1
   done
 fi
